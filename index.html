@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"><!-- ☑ あ keeps UTF-8 -->
+<title>regexp-diagram</title>
+<script src="./lib/regexp-diagram.js"></script>
+<script>
+RegExpDiagram.setup(window.document)
+
+let page = new class {
+    constructor() {
+        this.defaultQueryRegexp = /-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/.source
+    }
+
+    init() {
+        document.addEventListener('keydown', (event) => {
+            if (event.ctrlKey && event.key == 'Enter') {
+                this.draw()
+            }
+            else if (event.ctrlKey && event.altKey && event.key == 's') {
+                this.save()
+            }
+            else if (event.ctrlKey && event.altKey && event.key == 'e') {
+                this.export()
+            }
+        })
+        document.querySelector('textarea').focus()
+        document.querySelector('textarea').value = this.defaultQueryRegexp
+        this.draw()
+
+        document.querySelector('textarea').addEventListener('input', (e) => {
+            localStorage.setItem('re', document.querySelector('textarea').value)
+            if (e.inputType === 'insertFromPaste') {
+                this.draw()
+            }
+        })
+        document.querySelector('textarea').addEventListener('dragover', (e) => {
+            e.preventDefault()
+        })
+        document.querySelector('textarea').addEventListener('drop', (e) => {
+            e.preventDefault()
+            if (e.dataTransfer.files.length > 0) {
+                let fileReader = new FileReader()
+                fileReader.onload = (e) => {
+                    document.querySelector('textarea').value = e.target.result
+                    this.draw()
+                }
+                fileReader.readAsText(e.dataTransfer.files[0])
+            }
+            else {
+                document.querySelector('textarea').value = e.dataTransfer.getData('text')
+                this.draw()
+            }
+        })
+        document.querySelector('#wrap').addEventListener('change', (e) => {
+            localStorage.setItem('wrap', e.target.checked)
+            this.draw()
+        })
+        document.querySelector('#hi-res-image').addEventListener('change', (e) => {
+            localStorage.setItem('hiResImage', e.target.checked)
+        })
+
+        document.querySelector('#version').innerHTML = `regexp-diagram v${RegExpDiagram.VERSION}`
+    }
+
+    draw() {
+        // - SeeAlso: RegExpDiagram.Drawer.DEFAULT_STYLE
+        let style = {}
+        style.lineWidth = document.querySelector('#wrap').checked ? 640 : 0
+
+        try {
+            let diagram = new RegExpDiagram(document.querySelector('textarea').value)
+            let svg = diagram.draw(style)
+            document.querySelector('div.svg').innerHTML = ''
+            document.querySelector('div.svg').appendChild(svg)
+
+            // MEMO: Appends GUI
+            for (let selectable of svg.querySelectorAll('*[_textRange]')) {
+                selectable.onclick = (e) => {
+                    let textRange = selectable.getAttribute('_textRange').split(',')
+                    document.querySelector('textarea').focus()
+                    document.querySelector('textarea').setSelectionRange(textRange[0], textRange[1])
+                    e.stopPropagation()
+                }
+            }
+            svg.appendChild(document.createComment(diagram.pattern))
+        } catch (e) {
+            document.querySelector('div.svg').innerHTML = `<div class="error">${e}</div>`
+        }
+    }
+
+    save() {
+        let svg = document.querySelector('div.svg')
+
+        let a = document.createElement('a')
+        let blob = new Blob([svg.outerHTML], { type: "image/svg+xml" })
+        a.download = 'regexp-diagram.svg'
+        a.href = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg.innerHTML)))}`
+        a.click()
+    }
+
+    export() {
+        let svg = document.querySelector('div.svg')
+
+        let image = new Image()
+        image.onload = () => {
+            let canvas = document.querySelector('canvas')
+            let scale = document.querySelector('#hi-res-image').checked ? 2 : 1
+            canvas.width = image.width * scale
+            canvas.height = image.height * scale
+
+            let ctx = canvas.getContext('2d')
+            ctx.setTransform(scale, 0, 0, scale, 0, 0)
+            ctx.drawImage(image, 0, 0)
+
+            let a = document.createElement('a')
+            a.download = `regexp-diagram.png`
+            a.href = document.querySelector('canvas').toDataURL()
+            a.click()
+        }
+        image.src = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg.innerHTML)))}`
+    }
+
+    showContent() {
+        let blob = new Blob([document.querySelector('div.svg').outerHTML], { type: "image/svg+xml" })
+        location.href = URL.createObjectURL(blob)
+    }
+}()
+
+{
+    let re = localStorage.getItem('re')
+    if (re) {
+        page.defaultQueryRegexp = re
+    }
+}
+// if (location.href.indexOf('?') != -1) {
+//     let query = location.href.split('?')
+//     if (query.length >= 2) {
+//         query = query[1]
+//         for (let parameter of query.split('&')) {
+//             if (parameter.startsWith('re=')) {
+//                 page.defaultQueryRegexp = decodeURI(parameter.substr('re='.length))
+//             }
+//         }
+//     }
+// }
+
+window.onload = () => {
+    let wrap = JSON.parse(localStorage.getItem('wrap'))
+    if (typeof wrap === 'boolean') {
+        document.querySelector('#wrap').checked = wrap
+    }
+
+    let hiResImage = JSON.parse(localStorage.getItem('hiResImage'))
+    if (typeof hiResImage === 'boolean') {
+        document.querySelector('#hi-res-image').checked = hiResImage
+    }
+
+    page.init()    
+}
+</script>
+<style>
+* {
+    font-family: Arial;
+}
+html, body {
+    margin: 0;
+    padding: 0;
+}
+body {
+    font-size: 10pt;
+    color: rgba(0, 0, 0, 0.87);
+    background-color: #FAFAFA;
+}
+hr {
+    height: 1px;
+    border: none;
+    background-color: rgba(0, 0, 0, 0.12)
+}
+textarea {
+    width: 100%;
+    height: 16ex;
+    resize: vertical;
+}
+svg {
+    border: solid 1px rgba(0, 0, 0, 0.12);
+}
+.error {
+    color: #B00020;
+}
+#content {
+    margin: 16pt;
+}
+#content>*:not(:first-child) {
+    margin-top: 16pt;
+}
+.buttons>*:not(:first-child) {
+    margin-left: 4pt;
+}
+#version, a {
+    color: rgba(0, 0, 0, 0.5);
+}
+</style>
+</head>
+<body>
+<div id="content">
+    <textarea placeholder="Input RegExp here..."></textarea>
+    <div class="buttons">
+        <button onclick="javascript:page.draw();">Draw (ctrl+Enter)</button>
+        <span><input type="checkbox" id="wrap" checked></input><label for="wrap">wrap</label></span>
+    </div>
+    <hr>
+    <div class="buttons">
+        <button onclick="javascript:page.save();">Save SVG (ctrl alt+S)</button>
+        <button onclick="javascript:page.export();">Export as PNG (ctrl alt+E)</button>
+        <span><input type="checkbox" id="hi-res-image" checked></input><label for="hi-res-image">hi-res-image</label></span>
+        <button style="display: none;" onclick="javascript:page.showContent();">Content</button>
+    </div>
+    <div class="svg"></div>
+    <hr>
+    <div id="version"></div>
+    <br>
+    <a href="https://github.com/takayoshiotake/regexp-diagram">https://github.com/takayoshiotake/regexp-diagram</a>
+</div>
+<canvas style="display: none;"></canvas>
+</body>
+</html>
