@@ -19,6 +19,19 @@ Diagram:
 ![example1](https://raw.githubusercontent.com/takayoshiotake/regexp-diagram/master/README/example1.png "example1.png")
 
 
+### non-greedy matching
+
+RegExp:
+
+```
+(abc)+(xyz)+?
+```
+
+Diagram:
+
+![example2](https://raw.githubusercontent.com/takayoshiotake/regexp-diagram/master/README/example2.png "example2.png")
+
+
 ## Special thanks
 
 - https://github.com/javallone/regexper-static
