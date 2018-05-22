@@ -1,5 +1,7 @@
 # regexp-diagram
 
+![version][version-badge] [![license][license-badge]][LICENSE]
+
 https://takayoshiotake.github.io/regexp-diagram/
 draws regular expression patterns like railroad-diagram. Regular expression syntax follows the MDN Web docs.
 
@@ -36,3 +38,9 @@ Diagram:
 
 - https://github.com/javallone/regexper-static
 - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp#Syntax (May 18, 2018)
+
+
+
+[LICENSE]: ./LICENSE
+[version-badge]: https://img.shields.io/badge/version-1.1-blue.svg
+[license-badge]: https://img.shields.io/badge/license-MIT-blue.svg
