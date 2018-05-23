@@ -3,7 +3,7 @@
 ![version][version-badge] [![license][license-badge]][LICENSE]
 
 https://takayoshiotake.github.io/regexp-diagram/
-draws regular expression patterns like railroad-diagram. Regular expression syntax follows the MDN Web docs. And, from v1.1, named capture groups and lookbehind are supported.
+draws regular expression patterns like railroad-diagram. Regular expression syntax follows the MDN Web docs. And, from v1.1.0, named capture groups and lookbehind are supported.
 
 
 ## Examples
@@ -42,5 +42,5 @@ Diagram:
 
 
 [LICENSE]: ./LICENSE
-[version-badge]: https://img.shields.io/badge/version-1.1-blue.svg
+[version-badge]: https://img.shields.io/badge/version-1.1.0-blue.svg
 [license-badge]: https://img.shields.io/badge/license-MIT-blue.svg
