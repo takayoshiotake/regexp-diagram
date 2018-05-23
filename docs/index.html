@@ -133,17 +133,17 @@ let page = new class {
         page.defaultQueryRegexp = re
     }
 }
-// if (location.href.indexOf('?') != -1) {
-//     let query = location.href.split('?')
-//     if (query.length >= 2) {
-//         query = query[1]
-//         for (let parameter of query.split('&')) {
-//             if (parameter.startsWith('re=')) {
-//                 page.defaultQueryRegexp = decodeURI(parameter.substr('re='.length))
-//             }
-//         }
-//     }
-// }
+if (location.href.indexOf('?') != -1) {
+    let query = location.href.split('?')
+    if (query.length >= 2) {
+        query = query[1]
+        for (let parameter of query.split('&')) {
+            if (parameter.startsWith('re=')) {
+                page.defaultQueryRegexp = decodeURIComponent(parameter.substr('re='.length))
+            }
+        }
+    }
+}
 
 window.onload = () => {
     let wrap = JSON.parse(localStorage.getItem('wrap'))
