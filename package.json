@@ -1,0 +1,21 @@
+{
+  "name": "regexp-diagram",
+  "version": "1.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "regexp-diagram": "bin/regexp-diagram.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/takayoshiotake/regexp-diagram.git"
+  },
+  "author": "OTAKE Takayoshi",
+  "license": "MIT",
+  "dependencies": {
+    "puppeteer": "^1.4.0"
+  }
+}

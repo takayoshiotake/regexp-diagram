@@ -6,6 +6,20 @@ https://takayoshiotake.github.io/regexp-diagram/
 draws regular expression patterns like railroad-diagram. Regular expression syntax follows the MDN Web docs. And, from v1.1.0, named capture groups and lookbehind are supported.
 
 
+## Browser access
+
+- online: https://takayoshiotake.github.io/regexp-diagram/
+- offline: file://{regexp-diagram-dir}/doc/index.html
+
+
+## Node bin
+
+```shell
+regexp-diagram $ npm i
+regexp-diagram $ bin/regexp-diagram.js 'a|b' > output.svg
+```
+
+
 ## Examples
 
 ### number
