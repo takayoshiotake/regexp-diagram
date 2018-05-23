@@ -9,7 +9,7 @@ draws regular expression patterns like railroad-diagram. Regular expression synt
 ## Browser access
 
 - online: https://takayoshiotake.github.io/regexp-diagram/
-- offline: file://{regexp-diagram-dir}/doc/index.html
+- offline: file://{regexp-diagram-dir}/docs/index.html
 
 
 ## Node bin
