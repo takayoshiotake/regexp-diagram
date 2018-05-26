@@ -5,6 +5,11 @@ class RegExpDiagram {
         RegExpDiagram._supportsNamedGroup = true
     }
 
+    /**
+     * Creates a new with parsing the `regexp`
+     * @param {string|RegExp} regexp will be parsed
+     * @throws {string} error message when failed to parse the `regexp`
+     */
     constructor(regexp) {
         let pattern
         if (typeof regexp === 'string') {
@@ -33,11 +38,11 @@ class RegExpDiagram {
     }
 
     /**
-     * Analyzes pattern
-     * 
-     * @param {*} pattern 
-     * @param {*} firstIndex for append _textRange attribute
-     * @returns {[RegExpDiagramStation]} stations
+     * Returns stations with parsing the `pattern`
+     * @param {string} pattern being parsed
+     * @param {number} firstIndex for attaching `_textRange` property to each parsed station
+     * @returns {RegExpDiagramStation[]} stations
+     * @throws {string} error message when failed to parse the `pattern`
      */
     _readStations(pattern, firstIndex = 0) {
         let isRepeatable = (type) => {
@@ -88,10 +93,11 @@ class RegExpDiagram {
     }
 
     /**
-     * Reads a station
-     * @param {string} pattern 
-     * @param {*} firstIndex for append _textRange attribute
-     * @return {RegExpDiagramStation} station
+     * Returns a station with parsing the `pattern`
+     * @param {string} pattern begin parsed
+     * @param {number} firstIndex for attaching `_textRange` property to parsed station
+     * @returns {RegExpDiagramStation} station
+     * @throws {string} error message when failed to parse the `pattern`
      */
     _readStation(pattern, firstIndex = 0) {
         // Operator
@@ -347,6 +353,11 @@ class RegExpDiagram {
         }, lastIndex: 1 }
     }
 
+    /**
+     * Returns stations that is listed with parsing the `pattern` of selection
+     * @param {string} pattern of selection
+     * @returns {RegExpDiagramStation[]} stations includes the follwing types: character, characterRange and classified
+     */
     _listSelection(pattern) {
         let stations = []
         while (pattern.length > 0) {
@@ -418,6 +429,11 @@ class RegExpDiagram {
         return calculated
     }
 
+    /**
+     * Returns stations with consecutive characters joined into one
+     * @param {RegExpDiagramStation[]} stations will be marged
+     * @returns {RegExpDiagramStation[]} stations
+     */
     _merge(stations) {
         let merged = []
         for (let station of stations) {
@@ -438,6 +454,11 @@ class RegExpDiagram {
         return merged
     }
 
+    /**
+     * Returns stations with stations separated by '|' converted to branch
+     * @param {RegExpDiagramStation[]} stations will be calculated
+     * @returns {RegExpDiagramStation[]} stations
+     */
     _calculate(stations) {
         // Splits with operator '|' (branch)
         if (!stations.find(it => it.type === 'operator' && it.value == '|')) {
@@ -466,13 +487,20 @@ class RegExpDiagram {
         ]
     }
 
+    /**
+     * Returns a new drawn svg
+     * @param {object} style 
+     * @returns {SVGElement} svg
+     * @see RegExpDiagram.Drawer.DEFAULT_STYLE
+     */
     draw(style) {
         return new RegExpDiagram.Drawer(this.stations, style).svg()
     }
 }
 
-/*
-schema:
+/**
+```yaml
+schemas:
   RegExpDiagramStation:
     type: object
     properties:
@@ -487,8 +515,10 @@ schema:
           - repeat
           - selection
       value:
-        type: string
+        type: object
+```
 */
+class RegExpDiagramStation {} // dummy
 
 RegExpDiagram.CLASSIFIED_STRING = {
     '^'    : 'beginning of line',
