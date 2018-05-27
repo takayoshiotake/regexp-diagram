@@ -41,7 +41,7 @@ class RegExpDiagram {
      * Returns stations with parsing the `pattern`
      * @param {string} pattern being parsed
      * @param {number} firstIndex for attaching `_textRange` property to each parsed station
-     * @returns {RegExpDiagramStation[]} stations
+     * @returns {RegExpDiagram.Station[]} stations
      * @throws {string} error message when failed to parse the `pattern`
      */
     _readStations(pattern, firstIndex = 0) {
@@ -96,7 +96,7 @@ class RegExpDiagram {
      * Returns a station with parsing the `pattern`
      * @param {string} pattern begin parsed
      * @param {number} firstIndex for attaching `_textRange` property to parsed station
-     * @returns {RegExpDiagramStation} station
+     * @returns {RegExpDiagram.Station} station
      * @throws {string} error message when failed to parse the `pattern`
      */
     _readStation(pattern, firstIndex = 0) {
@@ -356,7 +356,7 @@ class RegExpDiagram {
     /**
      * Returns stations that is listed with parsing the `pattern` of selection
      * @param {string} pattern of selection
-     * @returns {RegExpDiagramStation[]} stations includes the follwing types: character, characterRange and classified
+     * @returns {RegExpDiagram.Station[]} stations includes the follwing types: character, characterRange and classified
      */
     _listSelection(pattern) {
         let stations = []
@@ -431,8 +431,8 @@ class RegExpDiagram {
 
     /**
      * Returns stations with consecutive characters joined into one
-     * @param {RegExpDiagramStation[]} stations will be marged
-     * @returns {RegExpDiagramStation[]} stations
+     * @param {RegExpDiagram.Station[]} stations will be marged
+     * @returns {RegExpDiagram.Station[]} stations
      */
     _merge(stations) {
         let merged = []
@@ -456,8 +456,8 @@ class RegExpDiagram {
 
     /**
      * Returns stations with stations separated by '|' converted to branch
-     * @param {RegExpDiagramStation[]} stations will be calculated
-     * @returns {RegExpDiagramStation[]} stations
+     * @param {RegExpDiagram.Station[]} stations will be calculated
+     * @returns {RegExpDiagram.Station[]} stations
      */
     _calculate(stations) {
         // Splits with operator '|' (branch)
@@ -489,7 +489,7 @@ class RegExpDiagram {
 
     /**
      * Returns a new drawn svg
-     * @param {object} style 
+     * @param {Object.<string, object>} style 
      * @returns {SVGElement} svg
      * @see RegExpDiagram.Drawer.DEFAULT_STYLE
      */
@@ -501,7 +501,7 @@ class RegExpDiagram {
 /**
 ```yaml
 schemas:
-  RegExpDiagramStation:
+  RegExpDiagram.Station:
     type: object
     properties:
       type:
@@ -518,8 +518,12 @@ schemas:
         type: object
 ```
 */
-class RegExpDiagramStation {} // dummy
+RegExpDiagram.Station = class _RegExpDiagramStation {} // dummy
 
+/**
+ * @constant
+ * @type {Object.<string, string>}
+ */
 RegExpDiagram.CLASSIFIED_STRING = {
     '^'    : 'beginning of line',
     '$'    : 'end of line',
@@ -541,7 +545,13 @@ RegExpDiagram.CLASSIFIED_STRING = {
     '\\0'  : 'null (0x00)'
 }
 
-RegExpDiagram.Drawer = class {
+RegExpDiagram.Drawer = class _RegExpDiagramDrawer {
+    /**
+     * Creates a new
+     * @param {RegExpDiagram.Station[]} stations 
+     * @param {Object.<string, object>} style 
+     * @see RegExpDiagram.Drawer.DEFAULT_STYLE
+     */
     constructor(stations, style) {
         this.stations = stations
 
@@ -549,8 +559,12 @@ RegExpDiagram.Drawer = class {
         Object.assign(this.style, style)
     }
 
+    /**
+     * Returns a new drawn svg
+     * @returns {SVGElement} svg
+     */
     svg() {
-        let ezsvg = RegExpDiagram._EzSvgNode.$(RegExpDiagram._document.createElementNS('http://www.w3.org/2000/svg', 'svg')).let(it => {
+        let ezsvg = RegExpDiagram.$(RegExpDiagram._document.createElementNS('http://www.w3.org/2000/svg', 'svg')).let(it => {
             it.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
             it.setAttribute('version', '1.1')
         })
@@ -638,7 +652,7 @@ path.terminal {
             it.setAttribute('width', eznode.width)
             it.setAttribute('height', eznode.height)
         })
-        ezsvg.append('rect', ':first-child').let(it => {
+        ezsvg.appendBefore('rect', ':first-child').let(it => {
             it.setAttribute('width', eznode.width)
             it.setAttribute('height', eznode.height)
             it.setAttribute('fill', this.style.backgroundColor)
@@ -650,6 +664,14 @@ path.terminal {
         return ezsvg.node
     }
 
+    /**
+     * 
+     * @param {RegExpDiagram.Station[]} stations 
+     * @param {RegExpDiagram._SVGNode} parentNode 
+     * @param {boolean} [stack = false] 
+     * @param {boolean} [isRoot = false] 
+     * @returns {RegExpDiagram._SVGNode} svgNode
+     */
     _appendStationNodes(stations, parentNode, stack = false, isRoot = false) {
         let g = parentNode.append('g')
 
@@ -721,7 +743,7 @@ path.terminal {
                         pathData.push(`Q${xl0},${yl0} ${xl0},${yl1}`)
                         pathData.push(`L${xl0},${yl2}`)
                         pathData.push(`Q${xl0},${yl3} ${xl1},${yl3}`)
-                        g.append('path', ':first-child').let(it => {
+                        g.appendBefore('path', ':first-child').let(it => {
                             it.setAttribute('class', 'railroad')
                             it.setAttribute('d', pathData.join(''))
                         })
@@ -768,7 +790,7 @@ path.terminal {
                     let pathData = []
                     pathData.push(`M${lastLineEndX},${lastLineEndY}`)
                     pathData.push(`L${maxWidth},${lastLineEndY}`)
-                    g.append('path', ':first-child').let(it => {
+                    g.appendBefore('path', ':first-child').let(it => {
                         it.setAttribute('class', 'railroad')
                         it.setAttribute('d', pathData.join(''))
                     })
@@ -850,6 +872,12 @@ path.terminal {
         return g
     }
 
+    /**
+     * 
+     * @param {RegExpDiagram.Station} station 
+     * @param {RegExpDiagram._SVGNode} parentNode 
+     * @returns {RegExpDiagram._SVGNode} svgNode
+     */
     _appendStationNode(station, parentNode) {
         if (station.type === 'character' || station.type === 'classified') {
             let g = parentNode.append('g').let(it => {
@@ -880,7 +908,7 @@ path.terminal {
             let upperHeight = height * 0.5
             let lowerHeight = height * 0.5
 
-            g.append('rect', 'text').let(it => {
+            g.appendBefore('rect', 'text').let(it => {
                 it.setAttribute('x', 0)
                 it.setAttribute('y', - height * 0.5)
                 it.setAttribute('width', width)
@@ -967,11 +995,10 @@ path.terminal {
         }
     }
 
-    // FIXME: both ends of group, normal railroad => normal railroad, inside branch, ...
     /**
      * 
-     * @param {*} eznode must not be transformed
-     * @param {*} repeat 
+     * @param {RegExpDiagram._SVGNode} eznode must not be transformed
+     * @param {object=} [repeat] 
      */
     _decorateJunction(eznode, repeat) {
         let width = eznode.width
@@ -1075,7 +1102,7 @@ path.terminal {
                 pathData.push(`L${x3},${y0}`)
                 pathData.push(`L${x3 - r},${y0 + r * 0.5}`)
             }
-            railroad.append('path', ':first-child').let(it => {
+            railroad.appendBefore('path', ':first-child').let(it => {
                 it.setAttribute('class', 'railroad')
                 it.setAttribute('d', pathData.join(''))
             })
@@ -1096,7 +1123,7 @@ path.terminal {
                 pathData.push(`L${x1},${y4}`)
                 pathData.push(`Q${x1},${y3} ${x2},${y3}`)
 
-                railroad.append('path', ':first-child').let(it => {
+                railroad.appendBefore('path', ':first-child').let(it => {
                     it.setAttribute('class', 'railroad' + (repeat.nonGreedy ? ' non-greedy' : ''))
                     it.setAttribute('d', pathData.join(''))
                 })
@@ -1107,7 +1134,7 @@ path.terminal {
                 pathData.push(`L${x2},${y6}`)
                 pathData.push(`L${x2 + r},${y6 + r * 0.5}`)
 
-                railroad.append('path', ':first-child').let(it => {
+                railroad.appendBefore('path', ':first-child').let(it => {
                     it.setAttribute('class', 'railroad')
                     it.setAttribute('d', pathData.join(''))
                 })
@@ -1127,7 +1154,8 @@ path.terminal {
 
     /**
      * 
-     * @param {*} eznode must not be transformed
+     * @param {RegExpDiagram._SVGNode} eznode must not be transformed 
+     * @param {boolean=} negative 
      */
     _decorateSelection(eznode, negative) {
         eznode.let(it => {
@@ -1143,7 +1171,7 @@ path.terminal {
             let x0 = 0
             let y0 = -eznode.upperHeight - this.style.stationMargin
 
-            let annotation = selection.append('text', ':first-child').let(it => {
+            let annotation = selection.appendBefore('text', ':first-child').let(it => {
                 it.setAttribute('class', 'annotation')
                 if (negative) {
                     it.textContent = 'none of:'
@@ -1157,7 +1185,7 @@ path.terminal {
                 dy = this._getAdjustedBBox(it).height + this.style.textPadding.y
             })
 
-            selection.append('rect', ':first-child').let(it => {
+            selection.appendBefore('rect', ':first-child').let(it => {
                 it.setAttribute('x', x0)
                 it.setAttribute('y', y0)
                 it.setAttribute('width', eznode.width + this.style.stationMargin * 2)
@@ -1174,8 +1202,8 @@ path.terminal {
 
     /**
      * 
-     * @param {*} eznode must not be transformed
-     * @param {*} stations 
+     * @param {RegExpDiagram._SVGNode} eznode must not be transformed 
+     * @param {RegExpDiagram.Station[]} stations in this branch
      */
     _decorateBranch(eznode, stations) {
         eznode.let(it => {
@@ -1227,7 +1255,7 @@ path.terminal {
 
                 dy += station._eznode.height + this.style.stationMargin
             }
-            branch.append('path', ':first-child').let(it => {
+            branch.appendBefore('path', ':first-child').let(it => {
                 it.setAttribute('class', 'railroad')
                 it.setAttribute('d', pathData.join(''))
             })
@@ -1238,11 +1266,11 @@ path.terminal {
 
     /**
      * 
-     * @param {*} eznode must not be transformed
-     * @param {*} groupNumber 
-     * @param {*} groupName 
-     * @param {*} lookahead 
-     * @param {*} lookbehind 
+     * @param {RegExpDiagram._SVGNode} eznode must not be transformed
+     * @param {number=} groupNumber 
+     * @param {string=} groupName 
+     * @param {string=} lookahead 
+     * @param {string=} lookbehind 
      */
     _decorateGroup(eznode, groupNumber, groupName, lookahead, lookbehind) {
         let group = eznode.wrap('g')
@@ -1254,11 +1282,11 @@ path.terminal {
             let x0 = 0
             let y0 = -eznode.upperHeight - this.style.stationMargin
 
-            group.append('path', ':first-child').let(it => {
+            group.appendBefore('path', ':first-child').let(it => {
                 it.setAttribute('class', 'railroad')
                 it.setAttribute('d', `M0,0 L${eznode.width},0`)
             })
-            group.append('rect', ':first-child').let(it => {
+            group.appendBefore('rect', ':first-child').let(it => {
                 it.setAttribute('x', x0)
                 it.setAttribute('y', y0)
                 it.setAttribute('width', eznode.width)
@@ -1267,7 +1295,7 @@ path.terminal {
             })
 
             if ((typeof lookahead !== 'undefined') || (typeof lookbehind !== 'undefined')) {
-                let annotation = group.append('text', ':first-child').let(it => {
+                let annotation = group.appendBefore('text', ':first-child').let(it => {
                     it.setAttribute('class', 'annotation')
                     if (typeof lookahead !== 'undefined') {
                         it.textContent = `${lookahead} lookahead`
@@ -1285,7 +1313,7 @@ path.terminal {
                 })
             }
             else {
-                let annotation = group.append('text', ':first-child').let(it => {
+                let annotation = group.appendBefore('text', ':first-child').let(it => {
                     it.setAttribute('class', 'annotation')
                     if (typeof groupName !== 'undefined') {
                         it.textContent = `group <${groupName}>`
@@ -1311,8 +1339,8 @@ path.terminal {
 
     /**
      * 
-     * @param {*} eznode must not be transformed
-     * @param {*} type
+     * @param {RegExpDiagram._SVGNode} eznode must not be transformed
+     * @param {string} [type = 'circle']
      */
     _decorateTerminals(eznode, type = 'circle') {
         if (eznode.height < this.style.stationMargin) {
@@ -1366,7 +1394,7 @@ path.terminal {
                 pathData.push(`L${x2},${eznode.upperHeight}`)
                 pathData.push(`M${x3},${endY}`)
                 pathData.push(`L${x4},${endY}`)
-                terminals.append('path', ':first-child').let(it => {
+                terminals.appendBefore('path', ':first-child').let(it => {
                     it.setAttribute('class', 'railroad')
                     it.setAttribute('d', pathData.join(''))
                 })
@@ -1397,7 +1425,7 @@ path.terminal {
                     pathData.push(`L${x2},${eznode.upperHeight}`)
                     pathData.push(`M${x3},${endY}`)
                     pathData.push(`L${x4},${endY}`)
-                    terminals.append('path', ':first-child').let(it => {
+                    terminals.appendBefore('path', ':first-child').let(it => {
                         it.setAttribute('class', 'railroad')
                         it.setAttribute('d', pathData.join(''))
                     })
@@ -1413,7 +1441,7 @@ path.terminal {
                     pathData.push(`L${x4},${endY + this.style.stationMargin * 0.5}`)
                     pathData.push(`M${x5},${endY - this.style.stationMargin * 0.5}`)
                     pathData.push(`L${x5},${endY + this.style.stationMargin * 0.5}`)
-                    terminals.append('path', ':first-child').let(it => {
+                    terminals.appendBefore('path', ':first-child').let(it => {
                         it.setAttribute('class', 'terminal')
                         it.setAttribute('d', pathData.join(''))
                     })
@@ -1424,6 +1452,11 @@ path.terminal {
         }
     }
 
+    /**
+     * 
+     * @param {SVGTextElement} textElement 
+     * @returns {SVGRect} bbox
+     */
     _getAdjustedBBox(textElement) {
         let size = textElement.getBBox()
         size.width = Math.ceil(size.width)
@@ -1432,16 +1465,13 @@ path.terminal {
     }
 }
 
-RegExpDiagram._EzSvgNode = class {
-    static $(node) {
-        if (node instanceof RegExpDiagram._EzSvgNode) {
-            return node
-        }
-        return new RegExpDiagram._EzSvgNode(node)
-    }
-
+RegExpDiagram._SVGNode = class _RegExpDiagramSVGNode {
+    /**
+     * Creates a new
+     * @param {SVGElement|RegExpDiagram._SVGNode} node 
+     */
     constructor(node) {
-        if (node instanceof RegExpDiagram._EzSvgNode) {
+        if (node instanceof RegExpDiagram._SVGNode) {
             this.node = node.node
         }
         else {
@@ -1449,23 +1479,38 @@ RegExpDiagram._EzSvgNode = class {
         }
     }
 
-    select(query) {
-        return new RegExpDiagram._EzSvgNode(this.node.querySelector(query))
-    }
-
-    append(node, beforeQuery) {
+    /**
+     * 
+     * @param {string|SVGElement} node 
+     * @returns {RegExpDiagram._SVGNode} svgNode
+     */
+    append(node) {
         if (typeof node === 'string') {
             node = RegExpDiagram._document.createElementNS('http://www.w3.org/2000/svg', node)
         }
-        if (!beforeQuery) {
-            this.node.appendChild(node)
-        }
-        else {
-            this.node.insertBefore(node, this.node.querySelector(beforeQuery))
-        }
-        return new RegExpDiagram._EzSvgNode(node)
+        this.node.appendChild(node)
+        return new RegExpDiagram._SVGNode(node)
     }
 
+    /**
+     * 
+     * @param {string|SVGElement} node 
+     * @param {string} query 
+     * @returns {RegExpDiagram._SVGNode} svgNode
+     */
+    appendBefore(node, query) {
+        if (typeof node === 'string') {
+            node = RegExpDiagram._document.createElementNS('http://www.w3.org/2000/svg', node)
+        }
+        this.node.insertBefore(node, this.node.querySelector(query))
+        return new RegExpDiagram._SVGNode(node)
+    }
+
+    /**
+     * 
+     * @param {string|SVGElement} node 
+     * @returns {this} this
+     */
     wrap(node) {
         if (typeof node === 'string') {
             node = RegExpDiagram._document.createElementNS('http://www.w3.org/2000/svg', node)
@@ -1478,6 +1523,9 @@ RegExpDiagram._EzSvgNode = class {
         return this
     }
 
+    /**
+     * Removes this node from the parent of this
+     */
     remove() {
         this.node.parentNode.removeChild(this.node)
     }
@@ -1488,7 +1536,14 @@ RegExpDiagram._EzSvgNode = class {
     }
 }
 
-RegExpDiagram.VERSION = '1.1.0'
+RegExpDiagram.$ = (node) => {
+    if (node instanceof RegExpDiagram._SVGNode) {
+        return node
+    }
+    return new RegExpDiagram._SVGNode(node)
+}
+
+RegExpDiagram.VERSION = '1.1.1-beta'
 
 RegExpDiagram.Drawer.DEFAULT_STYLE = {
     annotationFontSize: 10,
