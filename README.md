@@ -48,6 +48,14 @@ Diagram:
 ![example2](https://raw.githubusercontent.com/takayoshiotake/regexp-diagram/master/README/example2.png "example2.png")
 
 
+### negative lookahead
+
+RegEexp:
+
+```
+^(?!.*excluded).*
+```
+
 ## Special thanks
 
 - https://github.com/javallone/regexper-static
