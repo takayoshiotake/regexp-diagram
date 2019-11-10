@@ -360,6 +360,14 @@ class RegExpDiagram {
      */
     _listSelection(pattern) {
         let stations = []
+        // first '-' is character
+        if (pattern[0] == '-' && pattern.length > 0) {
+            stations.push({
+                type: 'character',
+                value: pattern[0]
+            })
+            pattern = pattern.substr(1)
+        }
         while (pattern.length > 0) {
             // HACK: read special character
             if ('^$*+?.(|{['.indexOf(pattern[0]) != -1) {
@@ -1543,7 +1551,7 @@ RegExpDiagram.$ = (node) => {
     return new RegExpDiagram._SVGNode(node)
 }
 
-RegExpDiagram.VERSION = '1.1.1-beta'
+RegExpDiagram.VERSION = '1.1.2-beta'
 
 RegExpDiagram.Drawer.DEFAULT_STYLE = {
     annotationFontSize: 10,
