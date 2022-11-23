@@ -56,6 +56,10 @@ RegEexp:
 ^(?!.*excluded).*
 ```
 
+## Issues
+
+- `.{2}{2}` should be error: Nothing to repeat (2022-11-23)
+
 ## Special thanks
 
 - https://github.com/javallone/regexper-static
