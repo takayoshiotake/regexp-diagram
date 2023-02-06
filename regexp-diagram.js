@@ -28,29 +28,13 @@ rect.box, path.line {
   console.log(metrics);
 
   let g = svg.append('g', {transform: 'translate(1, 1)'});
-
-  g.append(
-    'rect',
-    {
-      class: 'box',
-      x: 0,
-      y: 0,
-      width: metrics.width,
-      height: metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent,
-    }
-  );
-  g.append(
-    'text',
-    {
-      x: 0,
-      y: metrics.fontBoundingBoxAscent,
-    }
-  ).value.textContent = 'Hello';
+  const textStation = createTextStation('Hello World');
+  g.value.appendChild(textStation.render().value);
   g.append(
     'path',
     {
       class: 'line',
-      d: `M${metrics.width} ${(metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent) / 2}h12`,
+      d: `M${textStation.width} ${textStation.height / 2}h12`,
     }
   );
 
@@ -92,4 +76,43 @@ function createElement(name, attributes = {}) {
 
 function css(str) {
   return str.replace(/\s{2,}/g, '');
+}
+
+function createTextStation(text, x = 0, y = 0) {
+  return {
+    text: text,
+    x: x,
+    y: y,
+    get width() {
+      const metrics = measureText(`“${this.text}”`, '16px Arial');
+      return metrics.width;
+    },
+    get height() {
+      const metrics = measureText(`“${this.text}”`, '16px Arial');
+      return metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
+    },
+    render() {
+      const metrics = measureText(`“${this.text}”`, '16px Arial');
+
+      let g = createElement('g');
+      g.append(
+        'rect',
+        {
+          class: 'box',
+          x: 0,
+          y: 0,
+          width: metrics.width,
+          height: metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent,
+        }
+      );
+      g.append(
+        'text',
+        {
+          x: 0,
+          y: metrics.fontBoundingBoxAscent,
+        }
+      ).value.textContent = `“${this.text}”`;
+      return g;
+    }
+  };
 }
