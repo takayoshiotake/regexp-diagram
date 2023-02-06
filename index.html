@@ -6,6 +6,11 @@
     <title>regexp-diagram</title>
   </head>
   <body>
-    WIP
+    <div id="diagram"></div>
+    <script type="module">
+      import {render} from '/regexp-diagram.js';
+
+      render(document.querySelector('#diagram'));
+    </script>
   </body>
 </html>
