@@ -1,8 +1,6 @@
 export function render(element) {
   const railwayMaker = RailwayMaker();
   const svg = railwayMaker.StyledSvgTag();
-  // FIXME
-  svg.value.setAttribute('width', 1000);
 
   const stations = [];
   stations.push(
@@ -20,10 +18,50 @@ export function render(element) {
     )
   );
   stations.push(
-    railwayMaker.Loop(
+    railwayMaker.Shortcut(
       railwayMaker.CharacterStation(
-        'any character',
+        'a',
         true
+      )
+    )
+  );
+  stations.push(
+    railwayMaker.Shortcut(
+      railwayMaker.Loop(
+        railwayMaker.CharacterStation(
+          'a',
+          true
+        )
+      )
+    )
+  );
+  stations.push(
+    railwayMaker.Loop(
+      railwayMaker.Loop(
+        railwayMaker.CharacterStation(
+          'a',
+          true
+        )
+      )
+    )
+  );
+  stations.push(
+    railwayMaker.Shortcut(
+      railwayMaker.Shortcut(
+        railwayMaker.CharacterStation(
+          'a',
+          true
+        )
+      )
+    )
+  );
+  stations.push(
+    railwayMaker.Loop(
+      railwayMaker.Shortcut(
+        railwayMaker.CharacterStation(
+          'a',
+          true
+        )
       )
     )
   );
@@ -54,6 +92,9 @@ export function render(element) {
     );
   }
 
+  // FIXME: 2 means railwayWidth / 2 * 2
+  svg.value.setAttribute('width', stations.slice(-1)[0].x + stations.slice(-1)[0].width + 2);
+  svg.value.setAttribute('height', stations.map(s => s.height).reduce((a, b) => Math.max(a, b)) + 2);
   element.innerHTML = svg.value.outerHTML;
 }
 
@@ -87,8 +128,8 @@ const defaultStyle = {
   characterFontSize: 16,
   characterFontFamily: 'Arial',
   characterHorizontalPadding: 6,
-  strokeWidth: 2,
-  spacing: 12,
+  railwayWidth: 2,
+  railwayUnit: 12,
   arrowSize: 12,
 };
 
@@ -144,12 +185,17 @@ tspan.quotation, tspan.hyphen {
 rect.station {
   fill: none;
   stroke: black;
-  stroke-width: ${style.strokeWidth}px;
+  stroke-width: ${style.railwayWidth}px;
 }
 path.railway {
   fill: none;
   stroke: black;
-  stroke-width: ${style.strokeWidth}px;
+  stroke-width: ${style.railwayWidth}px;
+}
+path.arrow {
+  fill: none;
+  stroke: black;
+  stroke-width: ${style.railwayWidth}px;
 }
 path.link {
   fill: none;
@@ -184,21 +230,21 @@ rect.bounds {
             { x: this.x + this.width, y: this.height / 2 },
           ];
         },
-        // isClassified:
-        // g
-        //   rect
-        //   text.classified
-        //
-        // g
-        //   rect
-        //   text
-        //     tspan.quotation
-        //     tspan
-        //     tspan.quotation
-        render() {
+        // case isClassified:
+        //   g
+        //     rect
+        //     text.classified
+        // default:
+        //   g
+        //     rect
+        //     text
+        //       tspan.quotation
+        //       tspan
+        //       tspan.quotation
+        render(dx = 0, dy = 0) {
           const textMetrics = measureText(isClassified ? character : `“${character}”`);
 
-          const g = createElement('g', { transform: `translate(${this.x}, ${this.y})` });
+          const g = createElement('g', { transform: `translate(${this.x + dx}, ${this.y + dy})` });
           g.appendChild(
             'rect',
             {
@@ -252,6 +298,8 @@ rect.bounds {
           g.value.appendChild(station.render().value);
           g.appendChild('rect', {
             class: 'bounds',
+            x: station.x,
+            y: station.y,
             width: this.width,
             height: this.height,
           });
@@ -265,33 +313,95 @@ rect.bounds {
         x: x,
         y: y,
         get width() {
-          return station.width + style.spacing * 2;
+          return station.width + style.railwayUnit * 2;
         },
         get height() {
-          return station.height + style.spacing * 2 + style.arrowSize / 2;
+          return station.height + style.railwayUnit * 2 + style.arrowSize / 2;
         },
         get connectors() {
           return [
-            { x: this.x + style.spacing, y: station.connectors[0].y },
-            { x: this.x + this.width - style.spacing, y: station.connectors[1].y },
+            { x: this.x + style.railwayUnit, y: this.y + station.connectors[0].y },
+            { x: this.x + this.width - style.railwayUnit, y: this.y + station.connectors[1].y },
           ];
         },
-        render() {
-          const g = createElement('g', { transform: `translate(${this.x + style.spacing}, ${this.y})` });
-          g.value.appendChild(station.render().value);
+        // g
+        //   station
+        //   path.railway
+        //   path.arrow
+        render(dx = 0, dy = 0) {
+          const g = createElement('g', { transform: `translate(${this.x + dx}, ${this.y + dy})` });
+          g.value.appendChild(station.render(style.railwayUnit, 0).value);
           g.appendChild('path', { class: 'railway', d: pathD(`
-M ${station.connectors[1].x} ${station.connectors[1].y}
-q ${style.spacing} 0,${style.spacing} ${style.spacing}
-V ${station.height + style.spacing}
-q 0 ${style.spacing},-${style.spacing} ${style.spacing}
-H ${station.connectors[0].x}
-m ${style.arrowSize} -${style.arrowSize / 2}
-l -${style.arrowSize} ${style.arrowSize / 2}
+M ${station.connectors[1].x + style.railwayUnit} ${station.connectors[1].y}
+H ${this.width - style.railwayUnit}
+q ${style.railwayUnit} 0,${style.railwayUnit} ${style.railwayUnit}
+V ${station.height + style.railwayUnit}
+q 0 ${style.railwayUnit},${-style.railwayUnit} ${style.railwayUnit}
+H ${style.railwayUnit}
+q ${-style.railwayUnit} 0,${-style.railwayUnit} ${-style.railwayUnit}
+V ${station.connectors[0].y + style.railwayUnit}
+q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
+H ${station.connectors[0].x + style.railwayUnit}
+          `) });
+          g.appendChild('path', { class: 'arrow', d: pathD(`
+M ${style.railwayUnit + style.arrowSize} ${station.height + style.railwayUnit * 2 -style.arrowSize / 2}
+l ${-style.arrowSize} ${style.arrowSize / 2}
 l ${style.arrowSize} ${style.arrowSize / 2}
-m -${style.arrowSize} -${style.arrowSize / 2}
-q -${style.spacing} 0,-${style.spacing} -${style.spacing}
-V ${station.connectors[0].y + style.spacing}
-q 0 -${style.spacing},${style.spacing} -${style.spacing}
+          `) });
+          return g;
+        }
+      }
+    },
+
+    Shortcut(station, x = 0, y = 0) {
+      return {
+        x: x,
+        y: y,
+        get width() {
+          // MEMO: Optimization for `Shortcut(Loop(...))`
+          const spaceLeft = station.connectors[0].x - station.x;
+          const spaceRight = station.x + station.width - station.connectors[1].x;
+          return station.width + style.railwayUnit * 4 - spaceLeft - spaceRight;
+        },
+        get height() {
+          return station.height + style.railwayUnit * 3;
+        },
+        get connectors() {
+          return [
+            { x: this.x, y: station.connectors[0].y },
+            { x: this.x + this.width, y: station.connectors[1].y },
+          ];
+        },
+        // g
+        //   station
+        //   path.railway
+        //   path.arrow
+        //   path.railway
+        render(dx = 0, dy = 0) {
+          const g = createElement('g', { transform: `translate(${this.x + dx}, ${this.y + dy})` });
+
+          // MEMO: Optimization for `Shortcut(Loop(...))`
+          const spaceLeft = station.connectors[0].x - station.x;
+          g.value.appendChild(station.render(style.railwayUnit * 2 - spaceLeft, style.railwayUnit * 3).value);
+
+          g.appendChild('path', { class: 'railway', d: pathD(`
+M 0 ${station.connectors[0].y}
+H ${this.width}
+          `) });
+          g.appendChild('path', { class: 'arrow', d: pathD(`
+M ${this.width - style.railwayUnit * 2 - style.arrowSize} ${station.connectors[0].y - style.arrowSize / 2}
+l ${style.arrowSize} ${style.arrowSize / 2}
+l ${-style.arrowSize} ${style.arrowSize / 2}
+          `) });
+          g.appendChild('path', { class: 'railway', d: pathD(`
+M 0 ${station.connectors[0].y}
+q ${style.railwayUnit} 0,${style.railwayUnit} ${style.railwayUnit}
+v ${style.railwayUnit}
+q 0 ${style.railwayUnit},${style.railwayUnit} ${style.railwayUnit}
+M ${this.width - style.railwayUnit * 2} ${station.connectors[1].y + style.railwayUnit * 3}
+q ${style.railwayUnit} 0,${style.railwayUnit} ${-style.railwayUnit}
+v ${-style.railwayUnit}
+q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
           `) });
           return g;
         }
