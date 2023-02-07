@@ -65,6 +65,58 @@ export function render(element) {
       )
     )
   );
+  stations.push(
+    railwayMaker.Border(
+      railwayMaker.CharacterStation(
+        'a',
+        true
+      ),
+      'group'
+    )
+  );
+  stations.push(
+    railwayMaker.Border(
+      railwayMaker.CharacterStation(
+        'a',
+        true
+      ),
+      'long long text ...'
+    )
+  );
+  stations.push(
+    railwayMaker.Border(
+      railwayMaker.Shortcut(
+        railwayMaker.CharacterStation(
+          'a',
+          true
+        )
+      ),
+      ''
+    )
+  );
+  stations.push(
+    railwayMaker.Border(
+      railwayMaker.Loop(
+        railwayMaker.CharacterStation(
+          'a',
+          true
+        )
+      ),
+      ''
+    )
+  );
+  stations.push(
+    railwayMaker.Border(
+      railwayMaker.Border(
+        railwayMaker.CharacterStation(
+          'a',
+          true
+        ),
+        ''
+      ),
+      ''
+    )
+  );
 
   // DEBUG
   for (let i = 0; i < stations.length; ++i) {
@@ -128,6 +180,9 @@ const defaultStyle = {
   characterFontSize: 16,
   characterFontFamily: 'Arial',
   characterHorizontalPadding: 6,
+  helperHeight: 24,
+  helperFontSize: 12,
+  helperFontFamily: 'Arial',
   railwayWidth: 2,
   railwayUnit: 12,
   arrowSize: 12,
@@ -138,6 +193,25 @@ function RailwayMaker(style = defaultStyle) {
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
     context.font = `${style.characterFontSize}px ${style.characterFontFamily}`;
+    const metrics = context.measureText(text);
+    Object.defineProperties(metrics, {
+      roundedWidth: {
+        get: function() {
+          return Math.ceil(this.width);
+        },
+      },
+      height: {
+        get: function() {
+          return metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
+        }
+      },
+    });
+    return metrics;
+  };
+  const measureHelperText = text => {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    context.font = `${style.helperFontSize}px ${style.helperFontFamily}`;
     const metrics = context.measureText(text);
     Object.defineProperties(metrics, {
       roundedWidth: {
@@ -170,6 +244,9 @@ function RailwayMaker(style = defaultStyle) {
         );
       // MEMO: center stroke
       styleTag.value.textContent = css(`
+* {
+  stroke-linecap: but;
+}
 text {
   fill: black;
   font-size: ${style.characterFontSize}px;
@@ -178,6 +255,10 @@ text {
 }
 text.classified {
   font-style: oblique;
+}
+text.helper {
+  font-size: ${style.helperFontSize}px;
+  font-family: ${style.helperFontFamily};
 }
 tspan.quotation, tspan.hyphen {
   fill: rgba(0, 0, 0, 0.6);
@@ -196,6 +277,12 @@ path.arrow {
   fill: none;
   stroke: black;
   stroke-width: ${style.railwayWidth}px;
+}
+rect.border {
+  fill: none;
+  stroke: black;
+  stroke-width: ${style.railwayWidth}px;
+  stroke-dasharray: 4 2;
 }
 path.link {
   fill: none;
@@ -293,8 +380,8 @@ rect.bounds {
             { x: this.x + station.connectors[1].x, y: this.y + station.connectors[1].y },
           ];
         },
-        render() {
-          const g = createElement('g', { transform: `translate(${this.x}, ${this.y})` });
+        render(dx = 0, dy = 0) {
+          const g = createElement('g', { transform: `translate(${this.x + dx}, ${this.y + dy})` });
           g.value.appendChild(station.render().value);
           g.appendChild('rect', {
             class: 'bounds',
@@ -406,6 +493,45 @@ q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
           return g;
         }
       }
+    },
+
+    Border(station, help, x = 0, y = 0) {
+      return {
+        x: x,
+        y: y,
+        get width() {
+          const textMetrics = measureHelperText(help);
+          return Math.max(station.width + style.railwayUnit * 2, textMetrics.roundedWidth);
+        },
+        get height() {
+          return station.height + style.railwayUnit * 2 + style.helperHeight;
+        },
+        get connectors() {
+          return [
+            { x: this.x + station.connectors[0].x + style.railwayUnit, y: this.y + station.connectors[0].y + style.railwayUnit + style.helperHeight },
+            { x: this.x + station.connectors[1].x + style.railwayUnit, y: this.y + station.connectors[1].y + style.railwayUnit + style.helperHeight },
+          ];
+        },
+        render(dx = 0, dy = 0) {
+          const textMetrics = measureText(help);
+
+          const g = createElement('g', { transform: `translate(${this.x + dx}, ${this.y + dy})` });
+          g.value.appendChild(station.render(style.railwayUnit, style.railwayUnit + style.helperHeight).value);
+          g.appendChild('text', {
+            class: 'helper',
+            x: 0,
+            y: textMetrics.fontBoundingBoxAscent + (style.helperHeight - textMetrics.height) / 2,
+          }).value.textContent = help;
+          g.appendChild('rect', {
+            class: 'border',
+            x: station.x,
+            y: station.y + style.helperHeight,
+            width: this.width,
+            height: station.height + style.railwayUnit * 2,
+          });
+          return g;
+        }
+      };
     },
   };
 }
