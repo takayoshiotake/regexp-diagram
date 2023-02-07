@@ -268,7 +268,7 @@ rect.bounds {
           return station.width + style.spacing * 2;
         },
         get height() {
-          return station.height;
+          return station.height + style.spacing * 2 + style.arrowSize / 2;
         },
         get connectors() {
           return [
