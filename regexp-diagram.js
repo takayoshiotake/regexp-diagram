@@ -125,6 +125,11 @@ export function render(element) {
   for (let i = 1; i < stations.length; ++i) {
     stations[i].x = stations[i - 1].x + stations[i - 1].width + 12;
   }
+
+  const connectorLevel = stations.map(s => s.connectors[0].y).reduce((a, b) => Math.max(a, b));
+  stations.forEach(s => {
+    s.y = connectorLevel - s.connectors[0].y + s.y;
+  });
   
   let g = svg.appendChild('g', {transform: 'translate(1, 1)'});
   stations.forEach(station => {
@@ -146,7 +151,7 @@ export function render(element) {
 
   // FIXME: 2 means railwayWidth / 2 * 2
   svg.value.setAttribute('width', stations.slice(-1)[0].x + stations.slice(-1)[0].width + 2);
-  svg.value.setAttribute('height', stations.map(s => s.height).reduce((a, b) => Math.max(a, b)) + 2);
+  svg.value.setAttribute('height', stations.map(s => s.y + s.height).reduce((a, b) => Math.max(a, b)) + 2);
   element.innerHTML = svg.value.outerHTML;
 }
 
