@@ -3,6 +3,7 @@ export function render(element) {
   const svg = railwayMaker.StyledSvgTag();
 
   const stations = [];
+  stations.push(railwayMaker.TerminalStation());
   stations.push(
     railwayMaker.CharacterStation(
       'Hello world!',
@@ -14,7 +15,8 @@ export function render(element) {
       railwayMaker.CharacterStation(
         'any character',
         true
-      )
+      ),
+      'loop'
     )
   );
   stations.push(
@@ -42,7 +44,8 @@ export function render(element) {
           'a',
           true
         )
-      )
+      ),
+      'long long text ...'
     )
   );
   stations.push(
@@ -62,7 +65,8 @@ export function render(element) {
           'a',
           true
         )
-      )
+      ),
+      ''
     )
   );
   stations.push(
@@ -90,8 +94,7 @@ export function render(element) {
           'a',
           true
         )
-      ),
-      ''
+      )
     )
   );
   stations.push(
@@ -101,8 +104,7 @@ export function render(element) {
           'a',
           true
         )
-      ),
-      ''
+      )
     )
   );
   stations.push(
@@ -111,12 +113,11 @@ export function render(element) {
         railwayMaker.CharacterStation(
           'a',
           true
-        ),
-        ''
-      ),
-      ''
+        )
+      )
     )
   );
+  stations.push(railwayMaker.TerminalStation());
 
   // DEBUG
   for (let i = 0; i < stations.length; ++i) {
@@ -368,6 +369,42 @@ rect.bounds {
       }
     },
 
+    TerminalStation(x = 0, y = 0) {
+      return {
+        x: x,
+        y: y,
+        get width() {
+          // MEMO: between stroke centers
+          return style.railwayWidth * 2;
+        },
+        get height() {
+          return style.stationHeight;
+        },
+        get connectors() {
+          return [
+            { x: this.x, y: this.height / 2 },
+            { x: this.x + this.width, y: this.height / 2 },
+          ];
+        },
+        render(dx = 0, dy = 0) {
+          const g = createElement('g', { transform: `translate(${this.x + dx}, ${this.y + dy})` });
+          g.appendChild(
+            'path',
+            {
+              class: 'railway',
+              d: pathD(`
+M0 0
+V${this.height}
+M${this.width} 0
+V${this.height}
+              `),
+            }
+          );
+          return g;
+        },
+      };
+    },
+
     // DEBUG
     Bounds(station, x = 0, y = 0) {
       return {
@@ -400,15 +437,16 @@ rect.bounds {
       };
     },
 
-    Loop(station, x = 0, y = 0) {
+    Loop(station, help = '', x = 0, y = 0) {
       return {
         x: x,
         y: y,
         get width() {
-          return station.width + style.railwayUnit * 2;
+          const textMetrics = measureHelperText(help);
+          return Math.max(station.width + style.railwayUnit * 2, style.railwayUnit + textMetrics.roundedWidth);
         },
         get height() {
-          return station.height + style.railwayUnit * 2 + style.arrowSize / 2;
+          return station.height + style.railwayUnit * 2 + style.arrowSize / 2 + (help.length ? style.helperHeight : 0);
         },
         get connectors() {
           return [
@@ -420,7 +458,10 @@ rect.bounds {
         //   station
         //   path.railway
         //   path.arrow
+        //   text.helper
         render(dx = 0, dy = 0) {
+          const textMetrics = measureHelperText(help);
+
           const g = createElement('g', { transform: `translate(${this.x + dx}, ${this.y + dy})` });
           g.value.appendChild(station.render(style.railwayUnit, 0).value);
           g.appendChild('path', { class: 'railway', d: pathD(`
@@ -440,6 +481,13 @@ M ${style.railwayUnit + style.arrowSize} ${station.height + style.railwayUnit * 
 l ${-style.arrowSize} ${style.arrowSize / 2}
 l ${style.arrowSize} ${style.arrowSize / 2}
           `) });
+          if (help.length) {
+            g.appendChild('text', {
+              class: 'helper',
+              x: style.railwayUnit,
+              y: station.height + style.railwayUnit * 2 + style.arrowSize / 2 + textMetrics.fontBoundingBoxAscent + (style.helperHeight - textMetrics.height) / 2,
+            }).value.textContent = help;
+          }
           return g;
         }
       }
@@ -500,7 +548,7 @@ q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
       }
     },
 
-    Border(station, help, x = 0, y = 0) {
+    Border(station, help = '', x = 0, y = 0) {
       return {
         x: x,
         y: y,
@@ -509,28 +557,30 @@ q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
           return Math.max(station.width + style.railwayUnit * 2, textMetrics.roundedWidth);
         },
         get height() {
-          return station.height + style.railwayUnit * 2 + style.helperHeight;
+          return station.height + style.railwayUnit * 2 + (help.length ? style.helperHeight : 0);
         },
         get connectors() {
           return [
-            { x: this.x + station.connectors[0].x + style.railwayUnit, y: this.y + station.connectors[0].y + style.railwayUnit + style.helperHeight },
-            { x: this.x + station.connectors[1].x + style.railwayUnit, y: this.y + station.connectors[1].y + style.railwayUnit + style.helperHeight },
+            { x: this.x + station.connectors[0].x + style.railwayUnit, y: this.y + station.connectors[0].y + style.railwayUnit + (help.length ? style.helperHeight : 0) },
+            { x: this.x + station.connectors[1].x + style.railwayUnit, y: this.y + station.connectors[1].y + style.railwayUnit + (help.length ? style.helperHeight : 0) },
           ];
         },
         render(dx = 0, dy = 0) {
           const textMetrics = measureText(help);
 
           const g = createElement('g', { transform: `translate(${this.x + dx}, ${this.y + dy})` });
-          g.value.appendChild(station.render(style.railwayUnit, style.railwayUnit + style.helperHeight).value);
-          g.appendChild('text', {
-            class: 'helper',
-            x: 0,
-            y: textMetrics.fontBoundingBoxAscent + (style.helperHeight - textMetrics.height) / 2,
-          }).value.textContent = help;
+          g.value.appendChild(station.render(style.railwayUnit, style.railwayUnit + (help.length ? style.helperHeight : 0)).value);
+          if (help.length) {
+            g.appendChild('text', {
+              class: 'helper',
+              x: 0,
+              y: textMetrics.fontBoundingBoxAscent + (style.helperHeight - textMetrics.height) / 2,
+            }).value.textContent = help;
+          }
           g.appendChild('rect', {
             class: 'border',
             x: station.x,
-            y: station.y + style.helperHeight,
+            y: station.y + (help.length ? style.helperHeight : 0),
             width: this.width,
             height: station.height + style.railwayUnit * 2,
           });
