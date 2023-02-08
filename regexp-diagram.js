@@ -130,10 +130,11 @@ export function render(element) {
   vstak2.stations.push(railwayMaker.Loop(railwayMaker.CharacterStation('a', true)));
   vstak2.stations.push(railwayMaker.Shortcut(railwayMaker.CharacterStation('a', true)));
   stations.push(railwayMaker.Border(vstak2, 'one of:', false));
-  const range = railwayMaker.Range();
-  range.stations.push(railwayMaker.CharacterStation('1'));
-  range.stations.push(railwayMaker.CharacterStation('a', true));
-  stations.push(railwayMaker.Border(range, 'one of:', false));
+  const hstack = railwayMaker.HStack();
+  hstack.stations.push(railwayMaker.CharacterStation('1'));
+  hstack.stations.push(railwayMaker.Hyphen());
+  hstack.stations.push(railwayMaker.CharacterStation('a', true));
+  stations.push(railwayMaker.Border(hstack, 'one of:', false));
   stations.push(railwayMaker.TerminalStation());
 
   // DEBUG
@@ -328,6 +329,40 @@ rect.bounds {
 }
       `);
       return svgTag;
+    },
+
+    Hyphen(x = 0, y = 0) {
+      return {
+        x: x,
+        y: y,
+        get width() {
+          const textMetrics = measureText('−');
+          return textMetrics.roundedWidth;
+        },
+        get height() {
+          return style.stationHeight;
+        },
+        get connectors() {
+          return [
+            { x: this.x, y: this.height / 2 },
+            { x: this.x + this.width, y: this.height / 2 },
+          ];
+        },
+        render(dx = 0, dy = 0) {
+          const textMetrics = measureText('−');
+
+          const g = createElement('g', { transform: `translate(${this.x + dx}, ${this.y + dy})` });
+          const text = g.appendChild(
+            'text',
+            {
+              class: 'hyphen',
+              x: (textMetrics.roundedWidth - textMetrics.width) / 2,
+              y: textMetrics.fontBoundingBoxAscent + (style.stationHeight - textMetrics.height) / 2,
+            }
+          ).value.textContent = '−';
+          return g;
+        },
+      }
     },
 
     CharacterStation(character, isClassified, x = 0, y = 0) {
@@ -638,14 +673,14 @@ q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
       };
     },
 
-    Range(x = 0, y = 0) {
+    HStack(x = 0, y = 0) {
       return {
         stations: [],
         x: x,
         y: y,
         get width() {
           const values = this.stations.map(s => s.x + s.width);
-          return values.length ? values.reduce((a, b) => a + b + style.railwayUnit * 2) : 0;
+          return values.length ? values.reduce((a, b) => a + b + style.railwayUnit) : 0;
         },
         get height() {
           const values = this.stations.map(s => s.y + s.height);
@@ -664,19 +699,8 @@ q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
           let childX = 0;
           for (let i = 0; i < this.stations.length; ++i) {
             const station = this.stations[i];
-
-            if (i > 0) {
-              g.appendChild('text',
-                {
-                  x: childX + (style.railwayUnit * 2 - textMetrics.roundedWidth) / 2,
-                  y: textMetrics.fontBoundingBoxAscent + (this.height - textMetrics.height) / 2,
-                }
-              ).value.textContent = '−';
-              childX += style.railwayUnit * 2;
-            }
-            
             g.value.appendChild(station.render(childX, (this.height - station.height) / 2).value);
-            childX += station.x + station.width;
+            childX += station.x + station.width + style.railwayUnit;
           }
           return g;
         }
