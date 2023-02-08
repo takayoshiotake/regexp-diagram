@@ -155,7 +155,7 @@ export function render(element) {
     railwayMaker.BranchLine(
       [
         railwayMaker.CharacterStation('1'),
-        railwayMaker.Loop(railwayMaker.CharacterStation('a', true)),
+        railwayMaker.Loop(railwayMaker.CharacterStation('a', true), 'once'),
         railwayMaker.Shortcut(railwayMaker.CharacterStation('a', true)),
         railwayMaker.Shortcut(
           railwayMaker.Loop(
@@ -829,6 +829,7 @@ M ${station.connectors[1].x + style.railwayUnit * 2} ${station.connectors[1].y +
 H ${this.width}
               `) });
             } else {
+              // FIXME: some paths are duplicated
               g.appendChild('path', { class: 'railway', d: pathD(`
 M 0 ${this.connectors[0].y}
 q ${style.railwayUnit} 0,${style.railwayUnit} ${style.railwayUnit}
