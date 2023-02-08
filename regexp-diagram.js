@@ -151,11 +151,26 @@ export function render(element) {
       )
     )
   );
-  const vstak2 = railwayMaker.VStack();
-  vstak2.stations.push(railwayMaker.CharacterStation('1'));
-  vstak2.stations.push(railwayMaker.Loop(railwayMaker.CharacterStation('a', true)));
-  vstak2.stations.push(railwayMaker.Shortcut(railwayMaker.CharacterStation('a', true)));
-  stations.push(railwayMaker.Border(vstak2, 'one of:', false));
+  stations.push(
+    railwayMaker.BranchLine(
+      [
+        railwayMaker.CharacterStation('1'),
+        railwayMaker.Loop(railwayMaker.CharacterStation('a', true)),
+        railwayMaker.Shortcut(railwayMaker.CharacterStation('a', true)),
+        railwayMaker.Shortcut(
+          railwayMaker.Loop(
+            railwayMaker.SelectionStation(
+              [
+                railwayMaker.CharacterStation('1'),
+                railwayMaker.CharacterStation('a', true),
+                railwayMaker.RangeStation(railwayMaker.CharacterStation('0'), railwayMaker.CharacterStation('9'), false),
+              ]
+            )
+          )
+        )
+      ]
+    )
+  );
   stations.push(railwayMaker.RangeStation(railwayMaker.CharacterStation('1'), railwayMaker.CharacterStation('a', true)));
   stations.push(railwayMaker.TerminalStation());
 
@@ -770,9 +785,68 @@ q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
     },
 
     SelectionStation(stations, x = 0, y = 0) {
-      const vstak = this.VStack();
+      const vstak = this.VStack(x, y);
       vstak.stations = stations;
       return this.Border(vstak, 'one of:', false);
+    },
+
+    BranchLine(stations, x = 0, y = 0) {
+      return {
+        x: x,
+        y: y,
+        get width() {
+          return stations.map(s => s.x + s.width).reduce((a, b) => Math.max(a, b)) + style.railwayUnit * 4;
+        },
+        get height() {
+          return stations.map(s => s.y + s.height).reduce((a, b) => a + b + style.railwayUnit);
+        },
+        get connectors() {
+          return [
+            { x: this.x, y: stations[0].connectors[0].y },
+            { x: this.x + this.width, y: stations[0].connectors[1].y },
+          ];
+        },
+        get hasHorizontalPadding() {
+          return true;
+        },
+        render(dx = 0, dy = 0) {
+          const g = createElement('g', { transform: `translate(${this.x + dx}, ${this.y + dy})` });
+          let childY = 0;
+          for (let i = 0; i < stations.length; ++i) {
+            const station = stations[i];
+            g.value.appendChild(station.render(style.railwayUnit * 2, childY).value);
+            childY += station.y + station.height + style.railwayUnit;
+          }
+
+          childY = 0;
+          for (let i = 0; i < stations.length; ++i) {
+            const station = stations[i];
+            if (i == 0) {
+              g.appendChild('path', { class: 'railway', d: pathD(`
+M 0 ${this.connectors[0].y}
+H ${station.connectors[0].x + style.railwayUnit * 2}
+M ${station.connectors[1].x + style.railwayUnit * 2} ${station.connectors[1].y + childY}
+H ${this.width}
+              `) });
+            } else {
+              g.appendChild('path', { class: 'railway', d: pathD(`
+M 0 ${this.connectors[0].y}
+q ${style.railwayUnit} 0,${style.railwayUnit} ${style.railwayUnit}
+V ${station.connectors[0].y + childY - style.railwayUnit}
+q 0 ${style.railwayUnit},${style.railwayUnit} ${style.railwayUnit}
+H ${station.connectors[0].x + style.railwayUnit * 2}
+M ${station.connectors[1].x + style.railwayUnit * 2} ${station.connectors[1].y + childY}
+H ${this.width - style.railwayUnit * 2}
+q ${style.railwayUnit} 0,${style.railwayUnit} ${-style.railwayUnit}
+V ${this.connectors[1].y + style.railwayUnit}
+q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
+              `) });
+            }
+            childY += station.y + station.height + style.railwayUnit;
+          }
+          return g;
+        }
+      };
     },
   };
 }
