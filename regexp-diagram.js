@@ -152,7 +152,7 @@ export function render(element) {
     )
   );
   stations.push(
-    railwayMaker.BranchLine(
+    railwayMaker.Switch(
       [
         railwayMaker.CharacterStation('1'),
         railwayMaker.Loop(railwayMaker.CharacterStation('a', true), 'once'),
@@ -790,7 +790,7 @@ q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
       return this.Border(vstak, 'one of:', false);
     },
 
-    BranchLine(stations, x = 0, y = 0) {
+    Switch(stations, x = 0, y = 0) {
       return {
         x: x,
         y: y,
