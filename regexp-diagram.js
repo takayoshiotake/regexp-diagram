@@ -120,10 +120,20 @@ export function render(element) {
       'outer border text ...'
     )
   );
-  const vstak = railwayMaker.VStack();
-  vstak.stations.push(railwayMaker.CharacterStation('1'));
-  vstak.stations.push(railwayMaker.CharacterStation('line feed (0x0A)', true));
-  stations.push(railwayMaker.Border(vstak, 'one of:', false));
+  const vstak1 = railwayMaker.VStack();
+  vstak1.stations.push(railwayMaker.CharacterStation('1'));
+  vstak1.stations.push(railwayMaker.CharacterStation('a', true));
+  vstak1.stations.push(railwayMaker.CharacterStation('a', true));
+  stations.push(railwayMaker.Border(vstak1, 'one of:', false));
+  const vstak2 = railwayMaker.VStack();
+  vstak2.stations.push(railwayMaker.CharacterStation('1'));
+  vstak2.stations.push(railwayMaker.Loop(railwayMaker.CharacterStation('a', true)));
+  vstak2.stations.push(railwayMaker.Shortcut(railwayMaker.CharacterStation('a', true)));
+  stations.push(railwayMaker.Border(vstak2, 'one of:', false));
+  const range = railwayMaker.Range();
+  range.stations.push(railwayMaker.CharacterStation('1'));
+  range.stations.push(railwayMaker.CharacterStation('a', true));
+  stations.push(railwayMaker.Border(range, 'one of:', false));
   stations.push(railwayMaker.TerminalStation());
 
   // DEBUG
@@ -140,7 +150,7 @@ export function render(element) {
   let lineLevel = 0
   for (let i = 1; i < stations.length; ++i) {
     stations[i].x = stations[i - 1].x + stations[i - 1].width + 12;
-    if (i % 8 == 0) {
+    if (i % 10 == 0) {
       stations[i].x = 0;
       // XXX:
       lineLevel += 240;
@@ -282,7 +292,7 @@ text.helper {
   font-size: ${style.helperFontSize}px;
   font-family: ${style.helperFontFamily};
 }
-tspan.quotation, tspan.hyphen {
+tspan.quotation, text.hyphen {
   fill: rgba(0, 0, 0, 0.6);
 }
 rect.station {
@@ -605,7 +615,7 @@ q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
           }
         },
         render(dx = 0, dy = 0) {
-          const textMetrics = measureText(help);
+          const textMetrics = measureHelperText(help);
 
           const g = createElement('g', { transform: `translate(${this.x + dx}, ${this.y + dy})` });
           if (help.length) {
@@ -623,6 +633,51 @@ q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
             width: this.width,
             height: station.height + style.railwayUnit * 2,
           });
+          return g;
+        }
+      };
+    },
+
+    Range(x = 0, y = 0) {
+      return {
+        stations: [],
+        x: x,
+        y: y,
+        get width() {
+          const values = this.stations.map(s => s.x + s.width);
+          return values.length ? values.reduce((a, b) => a + b + style.railwayUnit * 2) : 0;
+        },
+        get height() {
+          const values = this.stations.map(s => s.y + s.height);
+          return values.length ? values.reduce((a, b) => Math.max(a, b)) : 0;
+        },
+        get connectors() {
+          return [
+            { x: this.x, y: this.y + this.height / 2 },
+            { x: this.x + this.width, y: this.y + this.height / 2 },
+          ];
+        },
+        render(dx = 0, dy = 0) {
+          const textMetrics = measureText('−');
+
+          const g = createElement('g', { transform: `translate(${this.x + dx}, ${this.y + dy})` });
+          let childX = 0;
+          for (let i = 0; i < this.stations.length; ++i) {
+            const station = this.stations[i];
+
+            if (i > 0) {
+              g.appendChild('text',
+                {
+                  x: childX + (style.railwayUnit * 2 - textMetrics.roundedWidth) / 2,
+                  y: textMetrics.fontBoundingBoxAscent + (this.height - textMetrics.height) / 2,
+                }
+              ).value.textContent = '−';
+              childX += style.railwayUnit * 2;
+            }
+            
+            g.value.appendChild(station.render(childX, (this.height - station.height) / 2).value);
+            childX += station.x + station.width;
+          }
           return g;
         }
       };
