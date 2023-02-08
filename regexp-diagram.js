@@ -127,6 +127,30 @@ export function render(element) {
       railwayMaker.RangeStation(railwayMaker.CharacterStation('0'), railwayMaker.CharacterStation('9'), false),
     ]
   ));
+  stations.push(
+    railwayMaker.Shortcut(
+      railwayMaker.SelectionStation(
+        [
+          railwayMaker.CharacterStation('1'),
+          railwayMaker.CharacterStation('a', true),
+          railwayMaker.RangeStation(railwayMaker.CharacterStation('0'), railwayMaker.CharacterStation('9'), false),
+        ]
+      )
+    )
+  );
+  stations.push(
+    railwayMaker.Shortcut(
+      railwayMaker.Loop(
+        railwayMaker.SelectionStation(
+          [
+            railwayMaker.CharacterStation('1'),
+            railwayMaker.CharacterStation('a', true),
+            railwayMaker.RangeStation(railwayMaker.CharacterStation('0'), railwayMaker.CharacterStation('9'), false),
+          ]
+        )
+      )
+    )
+  );
   const vstak2 = railwayMaker.VStack();
   vstak2.stations.push(railwayMaker.CharacterStation('1'));
   vstak2.stations.push(railwayMaker.Loop(railwayMaker.CharacterStation('a', true)));
@@ -563,12 +587,12 @@ l ${style.arrowSize} ${style.arrowSize / 2}
           return station.width + style.railwayUnit * 4 - spaceLeft - spaceRight;
         },
         get height() {
-          return station.height + style.railwayUnit * 3;
+          return station.height + style.arrowSize / 2 + style.railwayUnit * 2;
         },
         get connectors() {
           return [
-            { x: this.x, y: station.connectors[0].y },
-            { x: this.x + this.width, y: station.connectors[1].y },
+            { x: this.x, y: style.arrowSize / 2 },
+            { x: this.x + this.width, y: style.arrowSize / 2 },
           ];
         },
         get hasHorizontalPadding() {
@@ -584,25 +608,25 @@ l ${style.arrowSize} ${style.arrowSize / 2}
 
           // MEMO: Optimization for `Shortcut(Loop(...))`
           const spaceLeft = station.connectors[0].x - station.x;
-          g.value.appendChild(station.render(style.railwayUnit * 2 - spaceLeft, style.railwayUnit * 3).value);
+          g.value.appendChild(station.render(style.railwayUnit * 2 - spaceLeft, style.arrowSize / 2 + style.railwayUnit * 2).value);
 
           g.appendChild('path', { class: 'railway', d: pathD(`
-M 0 ${station.connectors[0].y}
+M 0 ${this.connectors[0].y}
 H ${this.width}
           `) });
           g.appendChild('path', { class: 'arrow', d: pathD(`
-M ${this.width - style.railwayUnit * 2 - style.arrowSize} ${station.connectors[0].y - style.arrowSize / 2}
+M ${this.width - style.railwayUnit * 2 - style.arrowSize} ${this.connectors[0].y - style.arrowSize / 2}
 l ${style.arrowSize} ${style.arrowSize / 2}
 l ${-style.arrowSize} ${style.arrowSize / 2}
           `) });
           g.appendChild('path', { class: 'railway', d: pathD(`
-M 0 ${station.connectors[0].y}
+M 0 ${this.connectors[0].y}
 q ${style.railwayUnit} 0,${style.railwayUnit} ${style.railwayUnit}
-v ${style.railwayUnit}
+V ${station.connectors[0].y + style.arrowSize / 2 + style.railwayUnit * 2 - style.railwayUnit}
 q 0 ${style.railwayUnit},${style.railwayUnit} ${style.railwayUnit}
-M ${this.width - style.railwayUnit * 2} ${station.connectors[1].y + style.railwayUnit * 3}
+M ${this.width - style.railwayUnit * 2} ${station.connectors[1].y + style.arrowSize / 2 + style.railwayUnit * 2}
 q ${style.railwayUnit} 0,${style.railwayUnit} ${-style.railwayUnit}
-v ${-style.railwayUnit}
+V ${this.connectors[1].y + style.railwayUnit}
 q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
           `) });
           return g;
