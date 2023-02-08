@@ -120,11 +120,13 @@ export function render(element) {
       'outer border text ...'
     )
   );
-  const vstak1 = railwayMaker.VStack();
-  vstak1.stations.push(railwayMaker.CharacterStation('1'));
-  vstak1.stations.push(railwayMaker.CharacterStation('a', true));
-  vstak1.stations.push(railwayMaker.CharacterStation('a', true));
-  stations.push(railwayMaker.Border(vstak1, 'one of:', false));
+  stations.push(railwayMaker.SelectionStation(
+    [
+      railwayMaker.CharacterStation('1'),
+      railwayMaker.CharacterStation('a', true),
+      railwayMaker.RangeStation(railwayMaker.CharacterStation('0'), railwayMaker.CharacterStation('9'), false),
+    ]
+  ));
   const vstak2 = railwayMaker.VStack();
   vstak2.stations.push(railwayMaker.CharacterStation('1'));
   vstak2.stations.push(railwayMaker.Loop(railwayMaker.CharacterStation('a', true)));
@@ -735,12 +737,18 @@ q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
       };
     },
 
-    RangeStation(s0, s1, x = 0, y = 0) {
+    RangeStation(s0, s1, hasBorder = true, x = 0, y = 0) {
       const hstack = this.HStack(x, y);
       hstack.stations.push(s0);
       hstack.stations.push(this.Hyphen());
       hstack.stations.push(s1);
-      return this.Border(hstack, 'one of:', false);
+      return hasBorder ? this.Border(hstack, 'one of:', false) : hstack;
+    },
+
+    SelectionStation(stations, x = 0, y = 0) {
+      const vstak = this.VStack();
+      vstak.stations = stations;
+      return this.Border(vstak, 'one of:', false);
     },
   };
 }
