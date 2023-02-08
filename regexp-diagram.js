@@ -130,11 +130,7 @@ export function render(element) {
   vstak2.stations.push(railwayMaker.Loop(railwayMaker.CharacterStation('a', true)));
   vstak2.stations.push(railwayMaker.Shortcut(railwayMaker.CharacterStation('a', true)));
   stations.push(railwayMaker.Border(vstak2, 'one of:', false));
-  const hstack = railwayMaker.HStack();
-  hstack.stations.push(railwayMaker.CharacterStation('1'));
-  hstack.stations.push(railwayMaker.Hyphen());
-  hstack.stations.push(railwayMaker.CharacterStation('a', true));
-  stations.push(railwayMaker.Border(hstack, 'one of:', false));
+  stations.push(railwayMaker.RangeStation(railwayMaker.CharacterStation('1'), railwayMaker.CharacterStation('a', true)));
   stations.push(railwayMaker.TerminalStation());
 
   // DEBUG
@@ -737,6 +733,14 @@ q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
           return g;
         }
       };
+    },
+
+    RangeStation(s0, s1, x = 0, y = 0) {
+      const hstack = this.HStack(x, y);
+      hstack.stations.push(s0);
+      hstack.stations.push(this.Hyphen());
+      hstack.stations.push(s1);
+      return this.Border(hstack, 'one of:', false);
     },
   };
 }
