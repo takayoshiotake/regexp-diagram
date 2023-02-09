@@ -12,7 +12,9 @@ const defaultStyle = {
 };
 
 export function render(element) {
-  const railwayMaker = RailwayMaker();
+  const style = defaultStyle;
+
+  const railwayMaker = RailwayMaker(style);
   const svg = railwayMaker.StyledSvgTag();
 
   // Test
@@ -216,9 +218,8 @@ export function render(element) {
   let g = svg.appendChild('g', {transform: 'translate(1, 1)'});
   g.value.appendChild(wrapping.render().value);
 
-  // FIXME: 2 means railwayWidth / 2 * 2
-  svg.value.setAttribute('width', wrapping.width + 2);
-  svg.value.setAttribute('height', wrapping.height + 2);
+  svg.value.setAttribute('width', wrapping.width + style.railwayWidth / 2 * 2);
+  svg.value.setAttribute('height', wrapping.height + style.railwayWidth / 2 * 2);
   element.innerHTML = svg.value.outerHTML;
 }
 
@@ -282,11 +283,7 @@ rect.border {
   stroke-width: ${style.railwayWidth}px;
   stroke-dasharray: 4 2;
 }
-path.link {
-  fill: none;
-  stroke: magenta;
-  stroke-width: 1px;
-}
+
 rect.bounds {
   fill: none;
   stroke: magenta;
