@@ -10,7 +10,7 @@
     <script type="module">
       import {render} from '/regexp-diagram.js';
 
-      render(document.querySelector('#diagram'));
+      document.querySelector('#diagram').innerHTML = render().outerHTML;
     </script>
   </body>
 </html>

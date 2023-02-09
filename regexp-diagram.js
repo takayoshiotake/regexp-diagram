@@ -11,11 +11,9 @@ const defaultStyle = {
   arrowSize: 12,
 };
 
-export function render(element) {
+export function render() {
   const style = defaultStyle;
-
   const railwayMaker = RailwayMaker(style);
-  const svg = railwayMaker.StyledSvgTag();
 
   // Test
   const stations = [];
@@ -215,12 +213,12 @@ export function render(element) {
   routes.push(route);
   const wrapping = railwayMaker.Bounds(railwayMaker.Wrapping(routes));
 
-  let g = svg.appendChild('g', {transform: 'translate(1, 1)'});
-  g.value.appendChild(wrapping.render().value);
-
+  const svg = railwayMaker.StyledSvgTag();
   svg.value.setAttribute('width', wrapping.width + style.railwayWidth / 2 * 2);
   svg.value.setAttribute('height', wrapping.height + style.railwayWidth / 2 * 2);
-  element.innerHTML = svg.value.outerHTML;
+  let g = svg.appendChild('g', {transform: `translate(${style.railwayWidth / 2}, ${style.railwayWidth / 2})`});
+  g.value.appendChild(wrapping.render().value);
+  return svg.value;
 }
 
 function RailwayMaker(style = defaultStyle) {
