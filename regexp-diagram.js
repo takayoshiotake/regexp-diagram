@@ -380,10 +380,8 @@ rect.bounds {
       return svgTag;
     },
 
-    Hyphen(x = 0, y = 0) {
+    Hyphen() {
       return {
-        x: x,
-        y: y,
         get width() {
           const textMetrics = measureText('−');
           return textMetrics.roundedWidth;
@@ -393,14 +391,14 @@ rect.bounds {
         },
         get connectors() {
           return [
-            { x: this.x, y: this.height / 2 },
-            { x: this.x + this.width, y: this.height / 2 },
+            { x: 0, y: this.height / 2 },
+            { x: this.width, y: this.height / 2 },
           ];
         },
         render(dx = 0, dy = 0) {
           const textMetrics = measureText('−');
 
-          const g = createElement('g', { transform: `translate(${this.x + dx}, ${this.y + dy})` });
+          const g = createElement('g', { transform: `translate(${dx}, ${dy})` });
           const text = g.appendChild(
             'text',
             {
@@ -414,10 +412,8 @@ rect.bounds {
       }
     },
 
-    CharacterStation(character, isClassified, x = 0, y = 0) {
+    CharacterStation(character, isClassified) {
       return {
-        x: x,
-        y: y,
         get width() {
           const textMetrics = measureText(isClassified ? character : `“${character}”`);
           // MEMO: between stroke centers
@@ -429,8 +425,8 @@ rect.bounds {
         },
         get connectors() {
           return [
-            { x: this.x, y: this.height / 2 },
-            { x: this.x + this.width, y: this.height / 2 },
+            { x: 0, y: this.height / 2 },
+            { x: this.width, y: this.height / 2 },
           ];
         },
         // case isClassified:
@@ -447,7 +443,7 @@ rect.bounds {
         render(dx = 0, dy = 0) {
           const textMetrics = measureText(isClassified ? character : `“${character}”`);
 
-          const g = createElement('g', { transform: `translate(${this.x + dx}, ${this.y + dy})` });
+          const g = createElement('g', { transform: `translate(${dx}, ${dy})` });
           g.appendChild(
             'rect',
             {
@@ -479,10 +475,8 @@ rect.bounds {
       }
     },
 
-    TerminalStation(x = 0, y = 0) {
+    TerminalStation() {
       return {
-        x: x,
-        y: y,
         get width() {
           // MEMO: between stroke centers
           return style.railwayWidth * 2;
@@ -492,12 +486,12 @@ rect.bounds {
         },
         get connectors() {
           return [
-            { x: this.x, y: this.height / 2 },
-            { x: this.x + this.width, y: this.height / 2 },
+            { x: 0, y: this.height / 2 },
+            { x: this.width, y: this.height / 2 },
           ];
         },
         render(dx = 0, dy = 0) {
-          const g = createElement('g', { transform: `translate(${this.x + dx}, ${this.y + dy})` });
+          const g = createElement('g', { transform: `translate(${dx}, ${dy})` });
           g.appendChild(
             'path',
             {
@@ -516,10 +510,8 @@ V${this.height}
     },
 
     // DEBUG
-    Bounds(station, x = 0, y = 0) {
+    Bounds(station) {
       return {
-        x: x,
-        y: y,
         get width() {
           return station.width;
         },
@@ -528,17 +520,15 @@ V${this.height}
         },
         get connectors() {
           return [
-            { x: this.x + station.connectors[0].x, y: this.y + station.connectors[0].y },
-            { x: this.x + station.connectors[1].x, y: this.y + station.connectors[1].y },
+            { x: station.connectors[0].x, y: station.connectors[0].y },
+            { x: station.connectors[1].x, y: station.connectors[1].y },
           ];
         },
         render(dx = 0, dy = 0) {
-          const g = createElement('g', { transform: `translate(${this.x + dx}, ${this.y + dy})` });
+          const g = createElement('g', { transform: `translate(${dx}, ${dy})` });
           g.value.appendChild(station.render().value);
           g.appendChild('rect', {
             class: 'bounds',
-            x: station.x,
-            y: station.y,
             width: this.width,
             height: this.height,
           });
@@ -547,10 +537,8 @@ V${this.height}
       };
     },
 
-    Loop(station, help = '', x = 0, y = 0) {
+    Loop(station, help = '') {
       return {
-        x: x,
-        y: y,
         get width() {
           const textMetrics = measureHelperText(help);
           return Math.max(station.width + style.railwayUnit * 2, style.railwayUnit + textMetrics.roundedWidth);
@@ -560,8 +548,8 @@ V${this.height}
         },
         get connectors() {
           return [
-            { x: this.x + style.railwayUnit, y: this.y + station.connectors[0].y },
-            { x: this.x + this.width - style.railwayUnit, y: this.y + station.connectors[1].y },
+            { x: style.railwayUnit, y: station.connectors[0].y },
+            { x: this.width - style.railwayUnit, y: station.connectors[1].y },
           ];
         },
         // g
@@ -572,7 +560,7 @@ V${this.height}
         render(dx = 0, dy = 0) {
           const textMetrics = measureHelperText(help);
 
-          const g = createElement('g', { transform: `translate(${this.x + dx}, ${this.y + dy})` });
+          const g = createElement('g', { transform: `translate(${dx}, ${dy})` });
           g.value.appendChild(station.render(style.railwayUnit, 0).value);
           g.appendChild('path', { class: 'railway', d: pathD(`
 M ${station.connectors[1].x + style.railwayUnit} ${station.connectors[1].y}
@@ -603,14 +591,12 @@ l ${style.arrowSize} ${style.arrowSize / 2}
       }
     },
 
-    Shortcut(station, x = 0, y = 0) {
+    Shortcut(station) {
       return {
-        x: x,
-        y: y,
         get width() {
           // MEMO: Optimization for `Shortcut(Loop(...))`
-          const spaceLeft = station.connectors[0].x - station.x;
-          const spaceRight = station.x + station.width - station.connectors[1].x;
+          const spaceLeft = station.connectors[0].x;
+          const spaceRight = station.width - station.connectors[1].x;
           return station.width + style.railwayUnit * 4 - spaceLeft - spaceRight;
         },
         get height() {
@@ -618,8 +604,8 @@ l ${style.arrowSize} ${style.arrowSize / 2}
         },
         get connectors() {
           return [
-            { x: this.x, y: style.arrowSize / 2 },
-            { x: this.x + this.width, y: style.arrowSize / 2 },
+            { x: 0, y: style.arrowSize / 2 },
+            { x: this.width, y: style.arrowSize / 2 },
           ];
         },
         get hasHorizontalPadding() {
@@ -631,10 +617,10 @@ l ${style.arrowSize} ${style.arrowSize / 2}
         //   path.arrow
         //   path.railway
         render(dx = 0, dy = 0) {
-          const g = createElement('g', { transform: `translate(${this.x + dx}, ${this.y + dy})` });
+          const g = createElement('g', { transform: `translate(${dx}, ${dy})` });
 
           // MEMO: Optimization for `Shortcut(Loop(...))`
-          const spaceLeft = station.connectors[0].x - station.x;
+          const spaceLeft = station.connectors[0].x;
           g.value.appendChild(station.render(style.railwayUnit * 2 - spaceLeft, style.arrowSize / 2 + style.railwayUnit * 2).value);
 
           g.appendChild('path', { class: 'railway', d: pathD(`
@@ -661,10 +647,8 @@ q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
       }
     },
 
-    Border(station, help = '', useInsideConnectors = true, x = 0, y = 0) {
+    Border(station, help = '', useInsideConnectors = true) {
       return {
-        x: x,
-        y: y,
         get width() {
           const textMetrics = measureHelperText(help);
           if (station.hasHorizontalPadding) {
@@ -682,26 +666,26 @@ q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
             if (station.hasHorizontalPadding) {
               // MEMO: Optimization for `Border(Shortcut(...))`, ...
               return [
-                { x: this.x + station.connectors[0].x, y: this.y + station.connectors[0].y + style.railwayUnit + (help.length ? style.helperHeight : 0) },
-                { x: this.x + station.connectors[1].x, y: this.y + station.connectors[1].y + style.railwayUnit + (help.length ? style.helperHeight : 0) },
+                { x: station.connectors[0].x, y: station.connectors[0].y + style.railwayUnit + (help.length ? style.helperHeight : 0) },
+                { x: station.connectors[1].x, y: station.connectors[1].y + style.railwayUnit + (help.length ? style.helperHeight : 0) },
               ];
             } else {
               return [
-                { x: this.x + station.connectors[0].x + style.railwayUnit, y: this.y + station.connectors[0].y + style.railwayUnit + (help.length ? style.helperHeight : 0) },
-                { x: this.x + station.connectors[1].x + style.railwayUnit, y: this.y + station.connectors[1].y + style.railwayUnit + (help.length ? style.helperHeight : 0) },
+                { x: station.connectors[0].x + style.railwayUnit, y: station.connectors[0].y + style.railwayUnit + (help.length ? style.helperHeight : 0) },
+                { x: station.connectors[1].x + style.railwayUnit, y: station.connectors[1].y + style.railwayUnit + (help.length ? style.helperHeight : 0) },
               ];
             }
           } else {
             return [
-              { x: this.x, y: this.y + station.connectors[0].y + style.railwayUnit + (help.length ? style.helperHeight : 0) },
-              { x: this.x + this.width, y: this.y + station.connectors[1].y + style.railwayUnit + (help.length ? style.helperHeight : 0) },
+              { x: 0, y: station.connectors[0].y + style.railwayUnit + (help.length ? style.helperHeight : 0) },
+              { x: this.width, y: station.connectors[1].y + style.railwayUnit + (help.length ? style.helperHeight : 0) },
             ];
           }
         },
         render(dx = 0, dy = 0) {
           const textMetrics = measureHelperText(help);
 
-          const g = createElement('g', { transform: `translate(${this.x + dx}, ${this.y + dy})` });
+          const g = createElement('g', { transform: `translate(${dx}, ${dy})` });
           if (help.length) {
             g.appendChild('text', {
               class: 'helper',
@@ -712,8 +696,8 @@ q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
           g.value.appendChild(station.render(station.hasHorizontalPadding ? 0 : style.railwayUnit, style.railwayUnit + (help.length ? style.helperHeight : 0)).value);
           g.appendChild('rect', {
             class: 'border',
-            x: station.x,
-            y: station.y + (help.length ? style.helperHeight : 0),
+            x: 0,
+            y: help.length ? style.helperHeight : 0,
             width: this.width,
             height: station.height + style.railwayUnit * 2,
           });
@@ -722,114 +706,106 @@ q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
       };
     },
 
-    HStack(x = 0, y = 0) {
+    HStack() {
       return {
         stations: [],
-        x: x,
-        y: y,
         get width() {
-          const values = this.stations.map(s => s.x + s.width);
+          const values = this.stations.map(s => s.width);
           return values.length ? values.reduce((a, b) => a + b + style.railwayUnit) : 0;
         },
         get height() {
-          const values = this.stations.map(s => s.y + s.height);
+          const values = this.stations.map(s => s.height);
           return values.length ? values.reduce((a, b) => Math.max(a, b)) : 0;
         },
         get connectors() {
           return [
-            { x: this.x, y: this.y + this.height / 2 },
-            { x: this.x + this.width, y: this.y + this.height / 2 },
+            { x: 0, y: this.height / 2 },
+            { x: this.width, y: this.height / 2 },
           ];
         },
         render(dx = 0, dy = 0) {
-          const textMetrics = measureText('−');
-
-          const g = createElement('g', { transform: `translate(${this.x + dx}, ${this.y + dy})` });
+          const g = createElement('g', { transform: `translate(${dx}, ${dy})` });
           let childX = 0;
           for (let i = 0; i < this.stations.length; ++i) {
             const station = this.stations[i];
             g.value.appendChild(station.render(childX, (this.height - station.height) / 2).value);
-            childX += station.x + station.width + style.railwayUnit;
+            childX += station.width + style.railwayUnit;
           }
           return g;
         }
       };
     },
 
-    VStack(x = 0, y = 0) {
+    VStack() {
       return {
         stations: [],
-        x: x,
-        y: y,
         get width() {
-          const values = this.stations.map(s => s.x + s.width);
+          const values = this.stations.map(s => s.width);
           return values.length ? values.reduce((a, b) => Math.max(a, b)) : 0;
         },
         get height() {
-          const values = this.stations.map(s => s.y + s.height);
+          const values = this.stations.map(s => s.height);
           return values.length ? values.reduce((a, b) => a + b + style.railwayUnit) : 0;
         },
         get connectors() {
           return [
-            { x: this.x, y: this.stations.length ? this.stations[0].connectors[0].y : this.y + this.height / 2 },
-            { x: this.x + this.width, y: this.stations.length ? this.stations[0].connectors[1].y : this.y + this.height / 2 },
+            { x: 0, y: this.stations.length ? this.stations[0].connectors[0].y : this.height / 2 },
+            { x: this.width, y: this.stations.length ? this.stations[0].connectors[1].y : this.height / 2 },
           ];
         },
         render(dx = 0, dy = 0) {
-          const g = createElement('g', { transform: `translate(${this.x + dx}, ${this.y + dy})` });
+          const g = createElement('g', { transform: `translate(${dx}, ${dy})` });
           let childY = 0;
           for (let i = 0; i < this.stations.length; ++i) {
             const station = this.stations[i];
             g.value.appendChild(station.render(0, childY).value);
-            childY += station.y + station.height + style.railwayUnit;
+            childY += station.height + style.railwayUnit;
           }
           return g;
         }
       };
     },
 
-    RangeStation(s0, s1, hasBorder = true, x = 0, y = 0) {
-      const hstack = this.HStack(x, y);
+    RangeStation(s0, s1, hasBorder = true) {
+      const hstack = this.HStack();
       hstack.stations.push(s0);
       hstack.stations.push(this.Hyphen());
       hstack.stations.push(s1);
       return hasBorder ? this.Border(hstack, 'one of:', false) : hstack;
     },
 
-    SelectionStation(stations, x = 0, y = 0) {
-      const vstak = this.VStack(x, y);
+    SelectionStation(stations) {
+      const vstak = this.VStack();
       vstak.stations = stations;
       return this.Border(vstak, 'one of:', false);
     },
 
-    Switch(stations, x = 0, y = 0) {
+    Switch(stations) {
       return {
-        x: x,
-        y: y,
         get width() {
-          return stations.map(s => s.x + s.width).reduce((a, b) => Math.max(a, b)) + style.railwayUnit * 4;
+          return stations.map(s => s.width).reduce((a, b) => Math.max(a, b)) + style.railwayUnit * 4;
         },
         get height() {
-          return stations.map(s => s.y + s.height).reduce((a, b) => a + b + style.railwayUnit);
+          return stations.map(s => s.height).reduce((a, b) => a + b + style.railwayUnit);
         },
         get connectors() {
           return [
-            { x: this.x, y: stations[0].connectors[0].y },
-            { x: this.x + this.width, y: stations[0].connectors[1].y },
+            { x: 0, y: stations[0].connectors[0].y },
+            { x: this.width, y: stations[0].connectors[1].y },
           ];
         },
         get hasHorizontalPadding() {
           return true;
         },
         render(dx = 0, dy = 0) {
-          const g = createElement('g', { transform: `translate(${this.x + dx}, ${this.y + dy})` });
+          const g = createElement('g', { transform: `translate(${dx}, ${dy})` });
           let childY = 0;
           let childrenY = [];
           for (let i = 0; i < stations.length; ++i) {
             const station = stations[i];
             g.value.appendChild(station.render(style.railwayUnit * 2, childY).value);
             childrenY.push(childY);
-            childY += station.y + station.height + style.railwayUnit;
+            childY += station.height + style.railwayUnit;
           }
 
           for (let i = 0; i < stations.length; ++i) {
@@ -872,68 +848,64 @@ V ${childrenY[i - 1] + stations[i - 1].connectors[1].y - style.railwayUnit}
       };
     },
 
-    StraightRoute(stations, x = 0, y = 0) {
+    StraightRoute(stations) {
       return {
         stations: stations,
-        x: x,
-        y: y,
         get width() {
-          const values = this.stations.map(s => s.x + s.width);
+          const values = this.stations.map(s => s.width);
           return values.length ? values.reduce((a, b) => a + b + style.railwayUnit) : 0;
         },
         get height() {
           const connectorLevel = this.stations.map(s => s.connectors[0].y).reduce((a, b) => Math.max(a, b));
-          const alignedStationsBottom = this.stations.map(s => connectorLevel - s.connectors[0].y + s.y + s.height).reduce((a, b) => Math.max(a, b));
-          return this.y + alignedStationsBottom;
+          const alignedStationsBottom = this.stations.map(s => connectorLevel - s.connectors[0].y + s.height).reduce((a, b) => Math.max(a, b));
+          return alignedStationsBottom;
         },
         get connectors() {
           const connectorLevel = this.stations.map(s => s.connectors[0].y).reduce((a, b) => Math.max(a, b));
           return [
-            { x: this.x, y: this.y + connectorLevel },
-            { x: this.x + this.width, y: this.y + connectorLevel },
+            { x: 0, y: connectorLevel },
+            { x: this.width, y: connectorLevel },
           ];
         },
         render(dx = 0, dy = 0) {
           const connectorLevel = this.stations.map(s => s.connectors[0].y).reduce((a, b) => Math.max(a, b));
 
-          const g = createElement('g', { transform: `translate(${this.x + dx}, ${this.y + dy})` });
+          const g = createElement('g', { transform: `translate(${dx}, ${dy})` });
           let childX = 0;
           for (let i = 0; i < this.stations.length; ++i) {
             const station = this.stations[i];
-            g.value.appendChild(station.render(childX, connectorLevel - station.connectors[0].y + station.y).value);
+            g.value.appendChild(station.render(childX, connectorLevel - station.connectors[0].y).value);
             if (i < this.stations.length - 1) {
               g.appendChild('path', { class: 'railway', d: pathD(`
 M ${childX + station.connectors[1].x} ${this.connectors[0].y}
-H ${childX + station.x + station.width + style.railwayUnit + this.stations[i + 1].connectors[0].x}
+H ${childX + station.width + style.railwayUnit + this.stations[i + 1].connectors[0].x}
               `) });
             }
-            childX += station.x + station.width + style.railwayUnit;
+            childX += station.width + style.railwayUnit;
           }
           return g;
         }
       };
     },
 
-    Wrapping(stations, x = 0, y = 0) {
+    Wrapping(stations) {
       return {
         stations: stations,
-        x: x,
-        y: y,
         get width() {
-          return this.stations.map(s => s.x + s.width).reduce((a, b) => Math.max(a, b)) + (this.stations.length >= 2 ? style.railwayUnit * 2: 0);
+          return this.stations.map(s => s.width).reduce((a, b) => Math.max(a, b)) + (this.stations.length >= 2 ? style.railwayUnit * 2: 0);
         },
         get height() {
-          return this.stations.map(s => s.y + s.height).reduce((a, b) => a + b + style.railwayUnit * 2);
+          return this.stations.map(s => s.height).reduce((a, b) => a + b + style.railwayUnit * 2);
         },
         get connectors() {
           const connectorLevel = this.stations.map(s => s.connectors[0].y).reduce((a, b) => Math.max(a, b));
           return [
-            { x: this.x, y: this.y + connectorLevel },
-            { x: this.x + this.width, y: this.y + connectorLevel },
+            { x: 0, y: connectorLevel },
+            { x: this.width, y: connectorLevel },
           ];
         },
         render(dx = 0, dy = 0) {
-          const g = createElement('g', { transform: `translate(${this.x + dx}, ${this.y + dy})` });
+          const g = createElement('g', { transform: `translate(${dx}, ${dy})` });
           let childX = 0;
           let childY = 0;
           for (let i = 0; i < this.stations.length; ++i) {
@@ -943,17 +915,17 @@ H ${childX + station.x + station.width + style.railwayUnit + this.stations[i + 1
               g.appendChild('path', { class: 'railway', d: pathD(`
 M ${childX + station.connectors[1].x} ${childY + station.connectors[1].y}
 q ${style.railwayUnit} 0, ${style.railwayUnit} ${style.railwayUnit}
-V ${childY + station.y + station.height}
+V ${childY + station.height}
 q 0 ${style.railwayUnit}, ${-style.railwayUnit} ${style.railwayUnit}
 H ${style.railwayUnit}
 q ${-style.railwayUnit} 0, ${-style.railwayUnit} ${style.railwayUnit}
-V ${childY + station.y + station.height + style.railwayUnit + this.stations[i + 1].connectors[0].y}
+V ${childY + station.height + style.railwayUnit + this.stations[i + 1].connectors[0].y}
 q 0 ${style.railwayUnit}, ${style.railwayUnit} ${style.railwayUnit}
 H ${style.railwayUnit + this.stations[i + 1].connectors[0].x}
               `) });
             }
             childX = style.railwayUnit;
-            childY += station.y + station.height + style.railwayUnit * 2;
+            childY += station.height + style.railwayUnit * 2;
           }
           return g;
         }
