@@ -197,7 +197,7 @@ export function render(element) {
   const routes = [];
   let route = railwayMaker.StraightRoute([]);
   for (let i = 0; i < stations.length; ++i) {
-    if ((i + 1) % 10 == 0) {
+    if (route.width > 1000) {
       routes.push(route);
       route = railwayMaker.StraightRoute([]);
     }
