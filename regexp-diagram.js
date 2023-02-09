@@ -187,44 +187,44 @@ export function render(element) {
     stations[i] = railwayMaker.Bounds(stations[i]);
   }
 
-  const connectorLevel = stations.map(s => s.connectors[0].y).reduce((a, b) => Math.max(a, b));
-  stations.forEach(s => {
-    s.y = connectorLevel - s.connectors[0].y + s.y;
-  });
-
-  // DEBUG
-  let lineLevel = 0
-  for (let i = 1; i < stations.length; ++i) {
-    stations[i].x = stations[i - 1].x + stations[i - 1].width + 12;
-    if (i % 10 == 0) {
-      stations[i].x = 0;
-      // XXX:
-      lineLevel += 240;
-    }
-    stations[i].y += lineLevel;
-  }
+  // const connectorLevel = stations.map(s => s.connectors[0].y).reduce((a, b) => Math.max(a, b));
+  // stations.forEach(s => {
+  //   s.y = connectorLevel - s.connectors[0].y + s.y;
+  // });
   
   let g = svg.appendChild('g', {transform: 'translate(1, 1)'});
-  stations.forEach(station => {
-    g.value.appendChild(station.render().value);
+
+  const routes = [];
+  let route = railwayMaker.StraightRoute([]);
+  for (let i = 0; i < stations.length; ++i) {
+    if ((i + 1) % 10 == 0) {
+      routes.push(route);
+      route = railwayMaker.StraightRoute([]);
+    }
+    route.stations.push(stations[i]);
+  }
+  routes.push(route);
+
+  routes.forEach((route, i) => {
+    g.value.appendChild(route.render(0, i * 200).value);
   });
 
-  for (let i = 1; i < stations.length; ++i) {
+  for (let i = 1; i < routes.length; ++i) {
     g.appendChild(
       'path',
       {
         class: 'link',
         d: pathD(`
-          M${stations[i - 1].connectors[1].x} ${stations[i - 1].connectors[1].y}
-          L${stations[i].connectors[0].x} ${stations[i].connectors[0].y}
+          M${routes[i - 1].connectors[1].x} ${routes[i - 1].connectors[1].y + (i - 1) * 200}
+          L${routes[i].connectors[0].x} ${routes[i].connectors[0].y + i * 200}
         `),
       }
     );
   }
 
   // FIXME: 2 means railwayWidth / 2 * 2
-  svg.value.setAttribute('width', stations.map(s => s.x + s.width).reduce((a, b) => Math.max(a, b)) + 2);
-  svg.value.setAttribute('height', stations.map(s => s.y + s.height).reduce((a, b) => Math.max(a, b)) + 2);
+  svg.value.setAttribute('width', routes.map(r => r.width).reduce((a, b) => Math.max(a, b)) + 2);
+  svg.value.setAttribute('height', (routes.length - 1) * 200 + routes.slice(-1)[0].height + 2);
   element.innerHTML = svg.value.outerHTML;
 }
 
@@ -900,7 +900,7 @@ V ${childrenY[i - 1] + stations[i - 1].connectors[1].y - style.railwayUnit}
             if (i < this.stations.length - 1) {
               g.appendChild('path', { class: 'railway', d: pathD(`
 M ${childX + station.connectors[1].x} ${this.connectors[0].y}
-H ${childX + station.x + station.width + style.railwayUnit + stations[i + 1].connectors[0].x}
+H ${childX + station.x + station.width + style.railwayUnit + this.stations[i + 1].connectors[0].x}
               `) });
             }
             childX += station.x + station.width + style.railwayUnit;
