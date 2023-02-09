@@ -14,190 +14,10 @@ const defaultStyle = {
   wrap: 1000,
 };
 
-export function render(style = defaultStyle) {
+export function makeDiagramSvg(style = defaultStyle) {
   const railwayMaker = RailwayMaker(style);
 
-  // Test
-  const stations = [];
-  stations.push(railwayMaker.TerminalStation());
-  stations.push(
-    railwayMaker.CharacterStation(
-      'Hello world!',
-      false
-    )
-  );
-  stations.push(
-    railwayMaker.Loop(
-      railwayMaker.CharacterStation(
-        'any character',
-        true
-      ),
-      'loop'
-    )
-  );
-  stations.push(
-    railwayMaker.Shortcut(
-      railwayMaker.CharacterStation(
-        'a',
-        true
-      )
-    )
-  );
-  stations.push(
-    railwayMaker.Shortcut(
-      railwayMaker.Loop(
-        railwayMaker.CharacterStation(
-          'a',
-          true
-        )
-      )
-    )
-  );
-  stations.push(
-    railwayMaker.Loop(
-      railwayMaker.Loop(
-        railwayMaker.CharacterStation(
-          'a',
-          true
-        ),
-        'inner loop text ...'
-      ),
-      'outer loop text ...'
-    )
-  );
-  stations.push(
-    railwayMaker.Shortcut(
-      railwayMaker.Shortcut(
-        railwayMaker.CharacterStation(
-          'a',
-          true
-        )
-      )
-    )
-  );
-  stations.push(
-    railwayMaker.Loop(
-      railwayMaker.Shortcut(
-        railwayMaker.CharacterStation(
-          'a',
-          true
-        )
-      ),
-      ''
-    )
-  );
-  stations.push(
-    railwayMaker.Border(
-      railwayMaker.CharacterStation(
-        'a',
-        true
-      ),
-      'group'
-    )
-  );
-  stations.push(
-    railwayMaker.Border(
-      railwayMaker.CharacterStation(
-        'a',
-        true
-      ),
-      'long long text ...'
-    )
-  );
-  stations.push(
-    railwayMaker.Border(
-      railwayMaker.Shortcut(
-        railwayMaker.CharacterStation(
-          'a',
-          true
-        )
-      )
-    )
-  );
-  stations.push(
-    railwayMaker.Border(
-      railwayMaker.Loop(
-        railwayMaker.CharacterStation(
-          'a',
-          true
-        )
-      )
-    )
-  );
-  stations.push(
-    railwayMaker.Border(
-      railwayMaker.Border(
-        railwayMaker.CharacterStation(
-          'a',
-          true
-        ),
-        'inner border text ...'
-      ),
-      'outer border text ...'
-    )
-  );
-  stations.push(railwayMaker.SelectionStation(
-    [
-      railwayMaker.CharacterStation('1'),
-      railwayMaker.CharacterStation('a', true),
-      railwayMaker.RangeStation(railwayMaker.CharacterStation('0'), railwayMaker.CharacterStation('9'), false),
-    ]
-  ));
-  stations.push(
-    railwayMaker.Shortcut(
-      railwayMaker.SelectionStation(
-        [
-          railwayMaker.CharacterStation('1'),
-          railwayMaker.CharacterStation('a', true),
-          railwayMaker.RangeStation(railwayMaker.CharacterStation('0'), railwayMaker.CharacterStation('9'), false),
-        ]
-      )
-    )
-  );
-  stations.push(
-    railwayMaker.Shortcut(
-      railwayMaker.Loop(
-        railwayMaker.SelectionStation(
-          [
-            railwayMaker.CharacterStation('1'),
-            railwayMaker.CharacterStation('a', true),
-            railwayMaker.RangeStation(railwayMaker.CharacterStation('0'), railwayMaker.CharacterStation('9'), false),
-          ]
-        )
-      )
-    )
-  );
-  stations.push(
-    railwayMaker.Switch(
-      [
-        railwayMaker.CharacterStation('1'),
-        railwayMaker.Loop(railwayMaker.CharacterStation('a', true), 'once'),
-        railwayMaker.Shortcut(railwayMaker.CharacterStation('a', true)),
-        railwayMaker.Shortcut(
-          railwayMaker.Loop(
-            railwayMaker.SelectionStation(
-              [
-                railwayMaker.CharacterStation('1'),
-                railwayMaker.CharacterStation('a', true),
-                railwayMaker.RangeStation(railwayMaker.CharacterStation('0'), railwayMaker.CharacterStation('9'), false),
-              ]
-            )
-          )
-        )
-      ]
-    )
-  );
-  stations.push(railwayMaker.RangeStation(railwayMaker.CharacterStation('1'), railwayMaker.CharacterStation('a', true)));
-  stations.push(railwayMaker.StraightRoute(
-    [
-      railwayMaker.CharacterStation('1'),
-      railwayMaker.Loop(railwayMaker.CharacterStation('a', true)),
-      railwayMaker.Border(railwayMaker.CharacterStation('a', true)),
-      railwayMaker.Shortcut(railwayMaker.CharacterStation('a', true)),
-    ]
-  ));
-  stations.push(railwayMaker.TerminalStation());
-
+  const stations = testStations(railwayMaker);
   // DEBUG
   for (let i = 0; i < stations.length; ++i) {
     stations[i] = railwayMaker.Bounds(stations[i]);
@@ -911,4 +731,188 @@ function css(str) {
 
 function pathD(str) {
   return str.replace(/\s/g, ' ').replace(/\s{2,}/g, '');
+}
+
+
+function testStations(railwayMaker) {
+  const stations = [];
+  stations.push(railwayMaker.TerminalStation());
+  stations.push(
+    railwayMaker.CharacterStation(
+      'Hello world!',
+      false
+    )
+  );
+  stations.push(
+    railwayMaker.Loop(
+      railwayMaker.CharacterStation(
+        'any character',
+        true
+      ),
+      'loop'
+    )
+  );
+  stations.push(
+    railwayMaker.Shortcut(
+      railwayMaker.CharacterStation(
+        'a',
+        true
+      )
+    )
+  );
+  stations.push(
+    railwayMaker.Shortcut(
+      railwayMaker.Loop(
+        railwayMaker.CharacterStation(
+          'a',
+          true
+        )
+      )
+    )
+  );
+  stations.push(
+    railwayMaker.Loop(
+      railwayMaker.Loop(
+        railwayMaker.CharacterStation(
+          'a',
+          true
+        ),
+        'inner loop text ...'
+      ),
+      'outer loop text ...'
+    )
+  );
+  stations.push(
+    railwayMaker.Shortcut(
+      railwayMaker.Shortcut(
+        railwayMaker.CharacterStation(
+          'a',
+          true
+        )
+      )
+    )
+  );
+  stations.push(
+    railwayMaker.Loop(
+      railwayMaker.Shortcut(
+        railwayMaker.CharacterStation(
+          'a',
+          true
+        )
+      ),
+      ''
+    )
+  );
+  stations.push(
+    railwayMaker.Border(
+      railwayMaker.CharacterStation(
+        'a',
+        true
+      ),
+      'group'
+    )
+  );
+  stations.push(
+    railwayMaker.Border(
+      railwayMaker.CharacterStation(
+        'a',
+        true
+      ),
+      'long long text ...'
+    )
+  );
+  stations.push(
+    railwayMaker.Border(
+      railwayMaker.Shortcut(
+        railwayMaker.CharacterStation(
+          'a',
+          true
+        )
+      )
+    )
+  );
+  stations.push(
+    railwayMaker.Border(
+      railwayMaker.Loop(
+        railwayMaker.CharacterStation(
+          'a',
+          true
+        )
+      )
+    )
+  );
+  stations.push(
+    railwayMaker.Border(
+      railwayMaker.Border(
+        railwayMaker.CharacterStation(
+          'a',
+          true
+        ),
+        'inner border text ...'
+      ),
+      'outer border text ...'
+    )
+  );
+  stations.push(railwayMaker.SelectionStation(
+    [
+      railwayMaker.CharacterStation('1'),
+      railwayMaker.CharacterStation('a', true),
+      railwayMaker.RangeStation(railwayMaker.CharacterStation('0'), railwayMaker.CharacterStation('9'), false),
+    ]
+  ));
+  stations.push(
+    railwayMaker.Shortcut(
+      railwayMaker.SelectionStation(
+        [
+          railwayMaker.CharacterStation('1'),
+          railwayMaker.CharacterStation('a', true),
+          railwayMaker.RangeStation(railwayMaker.CharacterStation('0'), railwayMaker.CharacterStation('9'), false),
+        ]
+      )
+    )
+  );
+  stations.push(
+    railwayMaker.Shortcut(
+      railwayMaker.Loop(
+        railwayMaker.SelectionStation(
+          [
+            railwayMaker.CharacterStation('1'),
+            railwayMaker.CharacterStation('a', true),
+            railwayMaker.RangeStation(railwayMaker.CharacterStation('0'), railwayMaker.CharacterStation('9'), false),
+          ]
+        )
+      )
+    )
+  );
+  stations.push(
+    railwayMaker.Switch(
+      [
+        railwayMaker.CharacterStation('1'),
+        railwayMaker.Loop(railwayMaker.CharacterStation('a', true), 'once'),
+        railwayMaker.Shortcut(railwayMaker.CharacterStation('a', true)),
+        railwayMaker.Shortcut(
+          railwayMaker.Loop(
+            railwayMaker.SelectionStation(
+              [
+                railwayMaker.CharacterStation('1'),
+                railwayMaker.CharacterStation('a', true),
+                railwayMaker.RangeStation(railwayMaker.CharacterStation('0'), railwayMaker.CharacterStation('9'), false),
+              ]
+            )
+          )
+        )
+      ]
+    )
+  );
+  stations.push(railwayMaker.RangeStation(railwayMaker.CharacterStation('1'), railwayMaker.CharacterStation('a', true)));
+  stations.push(railwayMaker.StraightRoute(
+    [
+      railwayMaker.CharacterStation('1'),
+      railwayMaker.Loop(railwayMaker.CharacterStation('a', true)),
+      railwayMaker.Border(railwayMaker.CharacterStation('a', true)),
+      railwayMaker.Shortcut(railwayMaker.CharacterStation('a', true)),
+    ]
+  ));
+  stations.push(railwayMaker.TerminalStation());
+  return stations;
 }

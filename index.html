@@ -8,9 +8,13 @@
   <body>
     <div id="diagram"></div>
     <script type="module">
-      import {render} from '/regexp-diagram.js';
+      import { makeDiagramSvg } from '/regexp-diagram.js';
 
-      document.querySelector('#diagram').innerHTML = render().outerHTML;
+      performance.mark('start');
+      document.querySelector('#diagram').innerHTML = makeDiagramSvg().outerHTML;
+      performance.mark('end');
+      performance.measure('time', 'start', 'end');
+      console.log(performance.getEntriesByName('time')[0].duration);
     </script>
   </body>
 </html>
