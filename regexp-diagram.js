@@ -114,9 +114,9 @@ rect.bounds {
     },
 
     Hyphen() {
+      const textMetrics = measureCharacterText('−');
       return {
         get width() {
-          const textMetrics = measureCharacterText('−');
           return textMetrics.roundedWidth;
         },
         get height() {
@@ -128,8 +128,6 @@ rect.bounds {
         // g
         //   text
         render(dx = 0, dy = 0) {
-          const textMetrics = measureCharacterText('−');
-
           const g = createElement('g', { class: 'regexp-diagram-hyphen', transform: `translate(${dx}, ${dy})` });
           const text = g.appendChild(
             'text',
@@ -145,9 +143,9 @@ rect.bounds {
     },
 
     CharacterStation(character, isClassified) {
+      const textMetrics = measureCharacterText(isClassified ? character : `“${character}”`);
       return {
         get width() {
-          const textMetrics = measureCharacterText(isClassified ? character : `“${character}”`);
           // MEMO: between stroke centers
           return textMetrics.roundedWidth + style.characterHorizontalPadding * 2;
         },
@@ -173,8 +171,6 @@ rect.bounds {
         //       tspan
         //       tspan.quotation
         render(dx = 0, dy = 0) {
-          const textMetrics = measureCharacterText(isClassified ? character : `“${character}”`);
-
           const g = createElement('g', { class: 'regexp-diagram-characterstation', transform: `translate(${dx}, ${dy})` });
           g.appendChild(
             'rect',
@@ -266,9 +262,9 @@ rect.bounds {
     },
 
     Loop(station, help = '') {
+      const textMetrics = measureHelperText(help);
       return {
         get width() {
-          const textMetrics = measureHelperText(help);
           return Math.max(station.width + style.railwayUnit * 2, style.railwayUnit + textMetrics.roundedWidth);
         },
         get height() {
@@ -286,8 +282,6 @@ rect.bounds {
         //   path.arrow
         //   text.helper?
         render(dx = 0, dy = 0) {
-          const textMetrics = measureHelperText(help);
-
           const g = createElement('g', { class: 'regexp-diagram-loop', transform: `translate(${dx}, ${dy})` });
           g.value.appendChild(station.render(style.railwayUnit, 0).value);
           g.appendChild('path', { class: 'railway', d: pathD(`
@@ -376,9 +370,9 @@ rect.bounds {
     },
 
     Border(station, help = '', useInsideConnectors = true) {
+      const textMetrics = measureHelperText(help);
       return {
         get width() {
-          const textMetrics = measureHelperText(help);
           if (station.hasHorizontalPadding) {
             // MEMO: Optimization for `Border(Shortcut(...))`, ...
             return Math.max(station.width, textMetrics.roundedWidth);
@@ -414,8 +408,6 @@ rect.bounds {
         //   text.helper?
         //   rect.border
         render(dx = 0, dy = 0) {
-          const textMetrics = measureHelperText(help);
-
           const g = createElement('g', { class: 'regexp-diagram-border', transform: `translate(${dx}, ${dy})` });
           if (help.length) {
             g.appendChild('text', {
