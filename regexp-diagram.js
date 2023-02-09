@@ -11,8 +11,7 @@ const defaultStyle = {
   arrowSize: 12,
 };
 
-export function render() {
-  const style = defaultStyle;
+export function render(style = defaultStyle) {
   const railwayMaker = RailwayMaker(style);
 
   // Test
