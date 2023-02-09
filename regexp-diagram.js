@@ -2,6 +2,7 @@ export function render(element) {
   const railwayMaker = RailwayMaker();
   const svg = railwayMaker.StyledSvgTag();
 
+  // Test
   const stations = [];
   stations.push(railwayMaker.TerminalStation());
   stations.push(
@@ -187,13 +188,6 @@ export function render(element) {
     stations[i] = railwayMaker.Bounds(stations[i]);
   }
 
-  // const connectorLevel = stations.map(s => s.connectors[0].y).reduce((a, b) => Math.max(a, b));
-  // stations.forEach(s => {
-  //   s.y = connectorLevel - s.connectors[0].y + s.y;
-  // });
-  
-  let g = svg.appendChild('g', {transform: 'translate(1, 1)'});
-
   const routes = [];
   let route = railwayMaker.StraightRoute([]);
   for (let i = 0; i < stations.length; ++i) {
@@ -204,27 +198,10 @@ export function render(element) {
     route.stations.push(stations[i]);
   }
   routes.push(route);
-
   const wrapping = railwayMaker.Bounds(railwayMaker.Wrapping(routes));
 
-  // routes.forEach((route, i) => {
-  //   g.value.appendChild(route.render(0, i * 200).value);
-  // });
-
+  let g = svg.appendChild('g', {transform: 'translate(1, 1)'});
   g.value.appendChild(wrapping.render().value);
-
-  // for (let i = 1; i < routes.length; ++i) {
-  //   g.appendChild(
-  //     'path',
-  //     {
-  //       class: 'link',
-  //       d: pathD(`
-  //         M${routes[i - 1].connectors[1].x} ${routes[i - 1].connectors[1].y + (i - 1) * 200}
-  //         L${routes[i].connectors[0].x} ${routes[i].connectors[0].y + i * 200}
-  //       `),
-  //     }
-  //   );
-  // }
 
   // FIXME: 2 means railwayWidth / 2 * 2
   svg.value.setAttribute('width', wrapping.width + 2);
@@ -395,10 +372,12 @@ rect.bounds {
             { x: this.width, y: this.height / 2 },
           ];
         },
+        // g
+        //   text
         render(dx = 0, dy = 0) {
           const textMetrics = measureText('−');
 
-          const g = createElement('g', { transform: `translate(${dx}, ${dy})` });
+          const g = createElement('g', { class: 'regexp-diagram-hyphen', transform: `translate(${dx}, ${dy})` });
           const text = g.appendChild(
             'text',
             {
@@ -443,7 +422,7 @@ rect.bounds {
         render(dx = 0, dy = 0) {
           const textMetrics = measureText(isClassified ? character : `“${character}”`);
 
-          const g = createElement('g', { transform: `translate(${dx}, ${dy})` });
+          const g = createElement('g', { class: 'regexp-diagram-characterstation', transform: `translate(${dx}, ${dy})` });
           g.appendChild(
             'rect',
             {
@@ -491,19 +470,13 @@ rect.bounds {
           ];
         },
         render(dx = 0, dy = 0) {
-          const g = createElement('g', { transform: `translate(${dx}, ${dy})` });
-          g.appendChild(
-            'path',
-            {
-              class: 'railway',
-              d: pathD(`
-M0 0
-V${this.height}
-M${this.width} 0
-V${this.height}
-              `),
-            }
-          );
+          const g = createElement('g', { class: 'regexp-diagram-terminalstation', transform: `translate(${dx}, ${dy})` });
+          g.appendChild('path', { class: 'railway', d: pathD(`
+            M0 0
+            V${this.height}
+            M${this.width} 0
+            V${this.height}
+          `) });
           return g;
         },
       };
@@ -524,8 +497,10 @@ V${this.height}
             { x: station.connectors[1].x, y: station.connectors[1].y },
           ];
         },
+        // g
+        //   rect
         render(dx = 0, dy = 0) {
-          const g = createElement('g', { transform: `translate(${dx}, ${dy})` });
+          const g = createElement('g', { class: 'regexp-diagram-bounds', transform: `translate(${dx}, ${dy})` });
           g.value.appendChild(station.render().value);
           g.appendChild('rect', {
             class: 'bounds',
@@ -560,24 +535,24 @@ V${this.height}
         render(dx = 0, dy = 0) {
           const textMetrics = measureHelperText(help);
 
-          const g = createElement('g', { transform: `translate(${dx}, ${dy})` });
+          const g = createElement('g', { class: 'regexp-diagram-loop', transform: `translate(${dx}, ${dy})` });
           g.value.appendChild(station.render(style.railwayUnit, 0).value);
           g.appendChild('path', { class: 'railway', d: pathD(`
-M ${station.connectors[1].x + style.railwayUnit} ${station.connectors[1].y}
-H ${this.width - style.railwayUnit}
-q ${style.railwayUnit} 0,${style.railwayUnit} ${style.railwayUnit}
-V ${station.height + style.railwayUnit}
-q 0 ${style.railwayUnit},${-style.railwayUnit} ${style.railwayUnit}
-H ${style.railwayUnit}
-q ${-style.railwayUnit} 0,${-style.railwayUnit} ${-style.railwayUnit}
-V ${station.connectors[0].y + style.railwayUnit}
-q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
-H ${station.connectors[0].x + style.railwayUnit}
+            M ${station.connectors[1].x + style.railwayUnit} ${station.connectors[1].y}
+            H ${this.width - style.railwayUnit}
+            q ${style.railwayUnit} 0,${style.railwayUnit} ${style.railwayUnit}
+            V ${station.height + style.railwayUnit}
+            q 0 ${style.railwayUnit},${-style.railwayUnit} ${style.railwayUnit}
+            H ${style.railwayUnit}
+            q ${-style.railwayUnit} 0,${-style.railwayUnit} ${-style.railwayUnit}
+            V ${station.connectors[0].y + style.railwayUnit}
+            q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
+            H ${station.connectors[0].x + style.railwayUnit}
           `) });
           g.appendChild('path', { class: 'arrow', d: pathD(`
-M ${style.railwayUnit + style.arrowSize} ${station.height + style.railwayUnit * 2 -style.arrowSize / 2}
-l ${-style.arrowSize} ${style.arrowSize / 2}
-l ${style.arrowSize} ${style.arrowSize / 2}
+            M ${style.railwayUnit + style.arrowSize} ${station.height + style.railwayUnit * 2 -style.arrowSize / 2}
+            l ${-style.arrowSize} ${style.arrowSize / 2}
+            l ${style.arrowSize} ${style.arrowSize / 2}
           `) });
           if (help.length) {
             g.appendChild('text', {
@@ -617,30 +592,30 @@ l ${style.arrowSize} ${style.arrowSize / 2}
         //   path.arrow
         //   path.railway
         render(dx = 0, dy = 0) {
-          const g = createElement('g', { transform: `translate(${dx}, ${dy})` });
+          const g = createElement('g', { class: 'regexp-diagram-shortcut', transform: `translate(${dx}, ${dy})` });
 
           // MEMO: Optimization for `Shortcut(Loop(...))`
           const spaceLeft = station.connectors[0].x;
           g.value.appendChild(station.render(style.railwayUnit * 2 - spaceLeft, style.arrowSize / 2 + style.railwayUnit * 2).value);
 
           g.appendChild('path', { class: 'railway', d: pathD(`
-M 0 ${this.connectors[0].y}
-H ${this.width}
+            M 0 ${this.connectors[0].y}
+            H ${this.width}
           `) });
           g.appendChild('path', { class: 'arrow', d: pathD(`
-M ${this.width - style.railwayUnit * 2 - style.arrowSize} ${this.connectors[0].y - style.arrowSize / 2}
-l ${style.arrowSize} ${style.arrowSize / 2}
-l ${-style.arrowSize} ${style.arrowSize / 2}
+            M ${this.width - style.railwayUnit * 2 - style.arrowSize} ${this.connectors[0].y - style.arrowSize / 2}
+            l ${style.arrowSize} ${style.arrowSize / 2}
+            l ${-style.arrowSize} ${style.arrowSize / 2}
           `) });
           g.appendChild('path', { class: 'railway', d: pathD(`
-M 0 ${this.connectors[0].y}
-q ${style.railwayUnit} 0,${style.railwayUnit} ${style.railwayUnit}
-V ${station.connectors[0].y + style.arrowSize / 2 + style.railwayUnit * 2 - style.railwayUnit}
-q 0 ${style.railwayUnit},${style.railwayUnit} ${style.railwayUnit}
-M ${this.width - style.railwayUnit * 2} ${station.connectors[1].y + style.arrowSize / 2 + style.railwayUnit * 2}
-q ${style.railwayUnit} 0,${style.railwayUnit} ${-style.railwayUnit}
-V ${this.connectors[1].y + style.railwayUnit}
-q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
+            M 0 ${this.connectors[0].y}
+            q ${style.railwayUnit} 0,${style.railwayUnit} ${style.railwayUnit}
+            V ${station.connectors[0].y + style.arrowSize / 2 + style.railwayUnit * 2 - style.railwayUnit}
+            q 0 ${style.railwayUnit},${style.railwayUnit} ${style.railwayUnit}
+            M ${this.width - style.railwayUnit * 2} ${station.connectors[1].y + style.arrowSize / 2 + style.railwayUnit * 2}
+            q ${style.railwayUnit} 0,${style.railwayUnit} ${-style.railwayUnit}
+            V ${this.connectors[1].y + style.railwayUnit}
+            q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
           `) });
           return g;
         }
@@ -685,7 +660,7 @@ q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
         render(dx = 0, dy = 0) {
           const textMetrics = measureHelperText(help);
 
-          const g = createElement('g', { transform: `translate(${dx}, ${dy})` });
+          const g = createElement('g', { class: 'regexp-diagram-border', transform: `translate(${dx}, ${dy})` });
           if (help.length) {
             g.appendChild('text', {
               class: 'helper',
@@ -724,7 +699,7 @@ q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
           ];
         },
         render(dx = 0, dy = 0) {
-          const g = createElement('g', { transform: `translate(${dx}, ${dy})` });
+          const g = createElement('g', { class: 'regexp-diagram-hstack', transform: `translate(${dx}, ${dy})` });
           let childX = 0;
           for (let i = 0; i < this.stations.length; ++i) {
             const station = this.stations[i];
@@ -754,7 +729,7 @@ q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
           ];
         },
         render(dx = 0, dy = 0) {
-          const g = createElement('g', { transform: `translate(${dx}, ${dy})` });
+          const g = createElement('g', { class: 'regexp-diagram-vstack', transform: `translate(${dx}, ${dy})` });
           let childY = 0;
           for (let i = 0; i < this.stations.length; ++i) {
             const station = this.stations[i];
@@ -798,7 +773,7 @@ q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
           return true;
         },
         render(dx = 0, dy = 0) {
-          const g = createElement('g', { transform: `translate(${dx}, ${dy})` });
+          const g = createElement('g', { class: 'regexp-diagram-switch', transform: `translate(${dx}, ${dy})` });
           let childY = 0;
           let childrenY = [];
           for (let i = 0; i < stations.length; ++i) {
@@ -812,34 +787,34 @@ q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
             const station = stations[i];
             if (i == 0) {
               g.appendChild('path', { class: 'railway', d: pathD(`
-M 0 ${this.connectors[0].y}
-H ${station.connectors[0].x + style.railwayUnit * 2}
-M ${station.connectors[1].x + style.railwayUnit * 2} ${station.connectors[1].y}
-H ${this.width}
+                M 0 ${this.connectors[0].y}
+                H ${station.connectors[0].x + style.railwayUnit * 2}
+                M ${station.connectors[1].x + style.railwayUnit * 2} ${station.connectors[1].y}
+                H ${this.width}
               `) });
             } else if (i == 1) {
               g.appendChild('path', { class: 'railway', d: pathD(`
-M 0 ${this.connectors[0].y}
-q ${style.railwayUnit} 0,${style.railwayUnit} ${style.railwayUnit}
-V ${station.connectors[0].y + childrenY[i] - style.railwayUnit}
-q 0 ${style.railwayUnit},${style.railwayUnit} ${style.railwayUnit}
-H ${station.connectors[0].x + style.railwayUnit * 2}
-M ${station.connectors[1].x + style.railwayUnit * 2} ${station.connectors[1].y + childrenY[i]}
-H ${this.width - style.railwayUnit * 2}
-q ${style.railwayUnit} 0,${style.railwayUnit} ${-style.railwayUnit}
-V ${this.connectors[1].y + style.railwayUnit}
-q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
+                M 0 ${this.connectors[0].y}
+                q ${style.railwayUnit} 0,${style.railwayUnit} ${style.railwayUnit}
+                V ${station.connectors[0].y + childrenY[i] - style.railwayUnit}
+                q 0 ${style.railwayUnit},${style.railwayUnit} ${style.railwayUnit}
+                H ${station.connectors[0].x + style.railwayUnit * 2}
+                M ${station.connectors[1].x + style.railwayUnit * 2} ${station.connectors[1].y + childrenY[i]}
+                H ${this.width - style.railwayUnit * 2}
+                q ${style.railwayUnit} 0,${style.railwayUnit} ${-style.railwayUnit}
+                V ${this.connectors[1].y + style.railwayUnit}
+                q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}
               `) });
             } else {
               g.appendChild('path', { class: 'railway', d: pathD(`
-M ${style.railwayUnit} ${childrenY[i - 1] + stations[i - 1].connectors[0].y - style.railwayUnit}
-V ${station.connectors[0].y + childrenY[i] - style.railwayUnit}
-q 0 ${style.railwayUnit},${style.railwayUnit} ${style.railwayUnit}
-H ${station.connectors[0].x + style.railwayUnit * 2}
-M ${station.connectors[1].x + style.railwayUnit * 2} ${station.connectors[1].y + childrenY[i]}
-H ${this.width - style.railwayUnit * 2}
-q ${style.railwayUnit} 0,${style.railwayUnit} ${-style.railwayUnit}
-V ${childrenY[i - 1] + stations[i - 1].connectors[1].y - style.railwayUnit}
+                M ${style.railwayUnit} ${childrenY[i - 1] + stations[i - 1].connectors[0].y - style.railwayUnit}
+                V ${station.connectors[0].y + childrenY[i] - style.railwayUnit}
+                q 0 ${style.railwayUnit},${style.railwayUnit} ${style.railwayUnit}
+                H ${station.connectors[0].x + style.railwayUnit * 2}
+                M ${station.connectors[1].x + style.railwayUnit * 2} ${station.connectors[1].y + childrenY[i]}
+                H ${this.width - style.railwayUnit * 2}
+                q ${style.railwayUnit} 0,${style.railwayUnit} ${-style.railwayUnit}
+                V ${childrenY[i - 1] + stations[i - 1].connectors[1].y - style.railwayUnit}
               `) });
             }
           }
@@ -870,15 +845,15 @@ V ${childrenY[i - 1] + stations[i - 1].connectors[1].y - style.railwayUnit}
         render(dx = 0, dy = 0) {
           const connectorLevel = this.stations.map(s => s.connectors[0].y).reduce((a, b) => Math.max(a, b));
 
-          const g = createElement('g', { transform: `translate(${dx}, ${dy})` });
+          const g = createElement('g', { class: 'regexp-diagram-straightroute', transform: `translate(${dx}, ${dy})` });
           let childX = 0;
           for (let i = 0; i < this.stations.length; ++i) {
             const station = this.stations[i];
             g.value.appendChild(station.render(childX, connectorLevel - station.connectors[0].y).value);
             if (i < this.stations.length - 1) {
               g.appendChild('path', { class: 'railway', d: pathD(`
-M ${childX + station.connectors[1].x} ${this.connectors[0].y}
-H ${childX + station.width + style.railwayUnit + this.stations[i + 1].connectors[0].x}
+                M ${childX + station.connectors[1].x} ${this.connectors[0].y}
+                H ${childX + station.width + style.railwayUnit + this.stations[i + 1].connectors[0].x}
               `) });
             }
             childX += station.width + style.railwayUnit;
@@ -898,14 +873,11 @@ H ${childX + station.width + style.railwayUnit + this.stations[i + 1].connectors
           return this.stations.map(s => s.height).reduce((a, b) => a + b + style.railwayUnit * 2);
         },
         get connectors() {
-          const connectorLevel = this.stations.map(s => s.connectors[0].y).reduce((a, b) => Math.max(a, b));
-          return [
-            { x: 0, y: connectorLevel },
-            { x: this.width, y: connectorLevel },
-          ];
+          // XXX
+          return [];
         },
         render(dx = 0, dy = 0) {
-          const g = createElement('g', { transform: `translate(${dx}, ${dy})` });
+          const g = createElement('g', { class: 'regexp-diagram-wrapping', transform: `translate(${dx}, ${dy})` });
           let childX = 0;
           let childY = 0;
           for (let i = 0; i < this.stations.length; ++i) {
@@ -913,15 +885,15 @@ H ${childX + station.width + style.railwayUnit + this.stations[i + 1].connectors
             g.value.appendChild(station.render(childX, childY).value);
             if (i < this.stations.length - 1) {
               g.appendChild('path', { class: 'railway', d: pathD(`
-M ${childX + station.connectors[1].x} ${childY + station.connectors[1].y}
-q ${style.railwayUnit} 0, ${style.railwayUnit} ${style.railwayUnit}
-V ${childY + station.height}
-q 0 ${style.railwayUnit}, ${-style.railwayUnit} ${style.railwayUnit}
-H ${style.railwayUnit}
-q ${-style.railwayUnit} 0, ${-style.railwayUnit} ${style.railwayUnit}
-V ${childY + station.height + style.railwayUnit + this.stations[i + 1].connectors[0].y}
-q 0 ${style.railwayUnit}, ${style.railwayUnit} ${style.railwayUnit}
-H ${style.railwayUnit + this.stations[i + 1].connectors[0].x}
+                M ${childX + station.connectors[1].x} ${childY + station.connectors[1].y}
+                q ${style.railwayUnit} 0, ${style.railwayUnit} ${style.railwayUnit}
+                V ${childY + station.height}
+                q 0 ${style.railwayUnit}, ${-style.railwayUnit} ${style.railwayUnit}
+                H ${style.railwayUnit}
+                q ${-style.railwayUnit} 0, ${-style.railwayUnit} ${style.railwayUnit}
+                V ${childY + station.height + style.railwayUnit + this.stations[i + 1].connectors[0].y}
+                q 0 ${style.railwayUnit}, ${style.railwayUnit} ${style.railwayUnit}
+                H ${style.railwayUnit + this.stations[i + 1].connectors[0].x}
               `) });
             }
             childX = style.railwayUnit;
