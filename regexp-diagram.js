@@ -1,3 +1,16 @@
+const defaultStyle = {
+  stationHeight: 24,
+  characterFontSize: 16,
+  characterFontFamily: 'Arial',
+  characterHorizontalPadding: 6,
+  helperHeight: 24,
+  helperFontSize: 12,
+  helperFontFamily: 'Arial',
+  railwayWidth: 2,
+  railwayUnit: 12,
+  arrowSize: 12,
+};
+
 export function render(element) {
   const railwayMaker = RailwayMaker();
   const svg = railwayMaker.StyledSvgTag();
@@ -209,83 +222,9 @@ export function render(element) {
   element.innerHTML = svg.value.outerHTML;
 }
 
-function createElement(name, attributes = {}) {
-  const element = document.createElement(name);
-  for (let key in attributes) {
-    element.setAttribute(key, attributes[key]);
-  }
-  return {
-    get value() {
-      return element;
-    },
-    appendChild(name, attributes = {}) {
-      const child = createElement(name, attributes);
-      this.value.appendChild(child.value);
-      return child;
-    },
-  };
-}
-
-function css(str) {
-  return str.trim();
-}
-
-function pathD(str) {
-  return str.replace(/\s/g, ' ').replace(/\s{2,}/g, '');
-}
-
-const defaultStyle = {
-  stationHeight: 24,
-  characterFontSize: 16,
-  characterFontFamily: 'Arial',
-  characterHorizontalPadding: 6,
-  helperHeight: 24,
-  helperFontSize: 12,
-  helperFontFamily: 'Arial',
-  railwayWidth: 2,
-  railwayUnit: 12,
-  arrowSize: 12,
-};
-
 function RailwayMaker(style = defaultStyle) {
-  const measureText = text => {
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    context.font = `${style.characterFontSize}px ${style.characterFontFamily}`;
-    const metrics = context.measureText(text);
-    Object.defineProperties(metrics, {
-      roundedWidth: {
-        get: function() {
-          return Math.ceil(this.width);
-        },
-      },
-      height: {
-        get: function() {
-          return metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
-        }
-      },
-    });
-    return metrics;
-  };
-  const measureHelperText = text => {
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    context.font = `${style.helperFontSize}px ${style.helperFontFamily}`;
-    const metrics = context.measureText(text);
-    Object.defineProperties(metrics, {
-      roundedWidth: {
-        get: function() {
-          return Math.ceil(this.width);
-        },
-      },
-      height: {
-        get: function() {
-          return metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
-        }
-      },
-    });
-    return metrics;
-  };
+  const measureCharacterText = text => measureText(text, `${style.characterFontSize}px ${style.characterFontFamily}`);
+  const measureHelperText = text => measureText(text, `${style.helperFontSize}px ${style.helperFontFamily}`);
 
   return {
     StyledSvgTag() {
@@ -360,22 +299,19 @@ rect.bounds {
     Hyphen() {
       return {
         get width() {
-          const textMetrics = measureText('−');
+          const textMetrics = measureCharacterText('−');
           return textMetrics.roundedWidth;
         },
         get height() {
           return style.stationHeight;
         },
         get connectors() {
-          return [
-            { x: 0, y: this.height / 2 },
-            { x: this.width, y: this.height / 2 },
-          ];
+          return [];
         },
         // g
         //   text
         render(dx = 0, dy = 0) {
-          const textMetrics = measureText('−');
+          const textMetrics = measureCharacterText('−');
 
           const g = createElement('g', { class: 'regexp-diagram-hyphen', transform: `translate(${dx}, ${dy})` });
           const text = g.appendChild(
@@ -394,7 +330,7 @@ rect.bounds {
     CharacterStation(character, isClassified) {
       return {
         get width() {
-          const textMetrics = measureText(isClassified ? character : `“${character}”`);
+          const textMetrics = measureCharacterText(isClassified ? character : `“${character}”`);
           // MEMO: between stroke centers
           return textMetrics.roundedWidth + style.characterHorizontalPadding * 2;
         },
@@ -420,7 +356,7 @@ rect.bounds {
         //       tspan
         //       tspan.quotation
         render(dx = 0, dy = 0) {
-          const textMetrics = measureText(isClassified ? character : `“${character}”`);
+          const textMetrics = measureCharacterText(isClassified ? character : `“${character}”`);
 
           const g = createElement('g', { class: 'regexp-diagram-characterstation', transform: `translate(${dx}, ${dy})` });
           g.appendChild(
@@ -531,7 +467,7 @@ rect.bounds {
         //   station
         //   path.railway
         //   path.arrow
-        //   text.helper
+        //   text.helper?
         render(dx = 0, dy = 0) {
           const textMetrics = measureHelperText(help);
 
@@ -657,6 +593,9 @@ rect.bounds {
             ];
           }
         },
+        // g
+        //   text.helper?
+        //   rect.border
         render(dx = 0, dy = 0) {
           const textMetrics = measureHelperText(help);
 
@@ -698,6 +637,9 @@ rect.bounds {
             { x: this.width, y: this.height / 2 },
           ];
         },
+        // station
+        // station
+        // ...
         render(dx = 0, dy = 0) {
           const g = createElement('g', { class: 'regexp-diagram-hstack', transform: `translate(${dx}, ${dy})` });
           let childX = 0;
@@ -728,6 +670,9 @@ rect.bounds {
             { x: this.width, y: this.stations.length ? this.stations[0].connectors[1].y : this.height / 2 },
           ];
         },
+        // station
+        // station
+        // ...
         render(dx = 0, dy = 0) {
           const g = createElement('g', { class: 'regexp-diagram-vstack', transform: `translate(${dx}, ${dy})` });
           let childY = 0;
@@ -772,6 +717,13 @@ rect.bounds {
         get hasHorizontalPadding() {
           return true;
         },
+        // g
+        //   child
+        //   path.railway
+        //   child
+        //   path.railway
+        //   ...
+        //   child
         render(dx = 0, dy = 0) {
           const g = createElement('g', { class: 'regexp-diagram-switch', transform: `translate(${dx}, ${dy})` });
           let childY = 0;
@@ -842,6 +794,13 @@ rect.bounds {
             { x: this.width, y: connectorLevel },
           ];
         },
+        // g
+        //   child
+        //   path.railway
+        //   child
+        //   path.railway
+        //   ...
+        //   child
         render(dx = 0, dy = 0) {
           const connectorLevel = this.stations.map(s => s.connectors[0].y).reduce((a, b) => Math.max(a, b));
 
@@ -873,9 +832,15 @@ rect.bounds {
           return this.stations.map(s => s.height).reduce((a, b) => a + b + style.railwayUnit * 2);
         },
         get connectors() {
-          // XXX
           return [];
         },
+        // g
+        //   child
+        //   path.railway
+        //   child
+        //   path.railway
+        //   ...
+        //   child
         render(dx = 0, dy = 0) {
           const g = createElement('g', { class: 'regexp-diagram-wrapping', transform: `translate(${dx}, ${dy})` });
           let childX = 0;
@@ -904,4 +869,49 @@ rect.bounds {
       };
     },
   };
+}
+
+function createElement(name, attributes = {}) {
+  const element = document.createElement(name);
+  for (let key in attributes) {
+    element.setAttribute(key, attributes[key]);
+  }
+  return {
+    get value() {
+      return element;
+    },
+    appendChild(name, attributes = {}) {
+      const child = createElement(name, attributes);
+      this.value.appendChild(child.value);
+      return child;
+    },
+  };
+}
+
+function measureText(text, font) {
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+  context.font = font;
+  const metrics = context.measureText(text);
+  Object.defineProperties(metrics, {
+    roundedWidth: {
+      get: function() {
+        return Math.ceil(this.width);
+      },
+    },
+    height: {
+      get: function() {
+        return metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
+      }
+    },
+  });
+  return metrics;
+};
+
+function css(str) {
+  return str.trim();
+}
+
+function pathD(str) {
+  return str.replace(/\s/g, ' ').replace(/\s{2,}/g, '');
 }
