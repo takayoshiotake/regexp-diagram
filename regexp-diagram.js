@@ -9,6 +9,9 @@ const defaultStyle = {
   railwayWidth: 2,
   railwayUnit: 12,
   arrowSize: 12,
+
+  // wrap: Infinity,
+  wrap: 1000,
 };
 
 export function render(style = defaultStyle) {
@@ -203,7 +206,7 @@ export function render(style = defaultStyle) {
   const routes = [];
   let route = railwayMaker.StraightRoute([]);
   for (let i = 0; i < stations.length; ++i) {
-    if (route.width > 1000) {
+    if (route.width > style.wrap) {
       routes.push(route);
       route = railwayMaker.StraightRoute([]);
     }
