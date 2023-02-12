@@ -88,7 +88,7 @@ tspan.quotation, text.hyphen {
   fill: rgba(0, 0, 0, 0.6);
 }
 rect.station {
-  fill: none;
+  fill: white;
   stroke: black;
   stroke-width: ${style.railwayWidth}px;
 }
@@ -102,9 +102,17 @@ path.arrow {
   stroke: black;
   stroke-width: ${style.railwayWidth}px;
 }
-rect.border {
+path.loop {
   fill: none;
   stroke: black;
+  stroke-width: ${style.railwayWidth}px;
+}
+.non-greedy path.loop {
+  stroke-dasharray: 4 2;
+}
+rect.border {
+  fill: #F0F0F0;
+  stroke: gray;
   stroke-width: ${style.railwayWidth}px;
   stroke-dasharray: 4 2;
 }
@@ -266,7 +274,7 @@ rect.bounds {
       };
     },
 
-    Loop(station, help = '') {
+    Loop(station, help = '', isGreedy = true) {
       const textMetrics = measureHelperText(help);
       return {
         get width() {
@@ -287,11 +295,14 @@ rect.bounds {
         //   path.arrow
         //   text.helper?
         render(dx = 0, dy = 0) {
-          const g = createElement('g', { class: 'regexp-diagram-loop', transform: `translate(${dx}, ${dy})` });
+          const g = createElement('g', { class: 'regexp-diagram-loop' + (isGreedy ? '' : ' non-greedy'), transform: `translate(${dx}, ${dy})` });
           g.value.appendChild(station.render(style.railwayUnit, 0).value);
           g.appendChild('path', { class: 'railway', d: pathD(`
             M ${station.connectors[1].x + style.railwayUnit} ${station.connectors[1].y}
             H ${this.width - style.railwayUnit}
+          `) });
+          g.appendChild('path', { class: 'loop', d: pathD(`
+            M ${this.width - style.railwayUnit} ${station.connectors[1].y}
             q ${style.railwayUnit} 0,${style.railwayUnit} ${style.railwayUnit}
             V ${station.height + style.railwayUnit}
             q 0 ${style.railwayUnit},${-style.railwayUnit} ${style.railwayUnit}
@@ -412,6 +423,7 @@ rect.bounds {
         // g
         //   text.helper?
         //   rect.border
+        //   station
         render(dx = 0, dy = 0) {
           const g = createElement('g', { class: 'regexp-diagram-border', transform: `translate(${dx}, ${dy})` });
           if (help.length) {
@@ -421,7 +433,6 @@ rect.bounds {
               y: textMetrics.fontBoundingBoxAscent + (style.helperHeight - textMetrics.height) / 2,
             }).value.textContent = help;
           }
-          g.value.appendChild(station.render(station.hasHorizontalPadding ? 0 : style.railwayUnit, style.railwayUnit + (help.length ? style.helperHeight : 0)).value);
           g.appendChild('rect', {
             class: 'border',
             x: 0,
@@ -429,6 +440,7 @@ rect.bounds {
             width: this.width,
             height: station.height + style.railwayUnit * 2,
           });
+          g.value.appendChild(station.render(station.hasHorizontalPadding ? 0 : style.railwayUnit, style.railwayUnit + (help.length ? style.helperHeight : 0)).value);
           return g;
         }
       };
@@ -748,7 +760,8 @@ function testStations(railwayMaker) {
         'any character',
         true
       ),
-      'loop'
+      'loop',
+      false
     )
   );
   stations.push(
