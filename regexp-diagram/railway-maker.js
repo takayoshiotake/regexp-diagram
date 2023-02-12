@@ -3,9 +3,9 @@ export const defaultStyle = {
   characterFontSize: 16,
   characterFontFamily: 'Arial',
   characterHorizontalPadding: 6,
-  helperHeight: 24,
-  helperFontSize: 12,
-  helperFontFamily: 'Arial',
+  annotationHeight: 24,
+  annotationFontSize: 12,
+  annotationFontFamily: 'Arial',
   railwayWidth: 2,
   railwayUnit: 12,
   arrowSize: 12,
@@ -13,7 +13,7 @@ export const defaultStyle = {
 
 export function RailwayMaker(style = defaultStyle) {
   const measureCharacterText = text => measureText(text, `${style.characterFontSize}px ${style.characterFontFamily}`);
-  const measureHelperText = text => measureText(text, `${style.helperFontSize}px ${style.helperFontFamily}`);
+  const measureAnnotationText = text => measureText(text, `${style.annotationFontSize}px ${style.annotationFontFamily}`);
 
   return {
     StyledSvgTag() {
@@ -43,9 +43,9 @@ text {
 text.classified {
   font-style: oblique;
 }
-text.helper {
-  font-size: ${style.helperFontSize}px;
-  font-family: ${style.helperFontFamily};
+text.annotation {
+  font-size: ${style.annotationFontSize}px;
+  font-family: ${style.annotationFontFamily};
 }
 tspan.quotation, text.hyphen {
   fill: rgba(0, 0, 0, 0.6);
@@ -237,14 +237,14 @@ rect.bounds {
       };
     },
 
-    Loop(station, help = '', isGreedy = true) {
-      const textMetrics = measureHelperText(help);
+    Loop(station, annotation = '', isGreedy = true) {
+      const textMetrics = measureAnnotationText(annotation);
       return {
         get width() {
           return Math.max(station.width + style.railwayUnit * 2, style.railwayUnit + textMetrics.roundedWidth);
         },
         get height() {
-          return station.height + style.railwayUnit * 2 + style.arrowSize / 2 + (help.length ? style.helperHeight : 0);
+          return station.height + style.railwayUnit * 2 + style.arrowSize / 2 + (annotation.length ? style.annotationHeight : 0);
         },
         get connectors() {
           return [
@@ -256,7 +256,7 @@ rect.bounds {
         //   station
         //   path.railway
         //   path.arrow
-        //   text.helper?
+        //   text.annotation?
         render(dx = 0, dy = 0) {
           const g = createElement('g', { class: 'regexp-diagram-loop' + (isGreedy ? '' : ' non-greedy'), transform: `translate(${dx}, ${dy})` });
           g.value.appendChild(station.render(style.railwayUnit, 0).value);
@@ -280,12 +280,12 @@ rect.bounds {
             l ${-style.arrowSize} ${style.arrowSize / 2}
             l ${style.arrowSize} ${style.arrowSize / 2}
           `) });
-          if (help.length) {
+          if (annotation.length) {
             g.appendChild('text', {
-              class: 'helper',
+              class: 'annotation',
               x: style.railwayUnit,
-              y: station.height + style.railwayUnit * 2 + style.arrowSize / 2 + textMetrics.fontBoundingBoxAscent + (style.helperHeight - textMetrics.height) / 2,
-            }).value.textContent = help;
+              y: station.height + style.railwayUnit * 2 + style.arrowSize / 2 + textMetrics.fontBoundingBoxAscent + (style.annotationHeight - textMetrics.height) / 2,
+            }).value.textContent = annotation;
           }
           return g;
         }
@@ -348,8 +348,8 @@ rect.bounds {
       }
     },
 
-    Border(station, help = '', useInsideConnectors = true) {
-      const textMetrics = measureHelperText(help);
+    Border(station, annotation = '', useInsideConnectors = true) {
+      const textMetrics = measureAnnotationText(annotation);
       return {
         get width() {
           if (station.hasHorizontalPadding) {
@@ -360,50 +360,50 @@ rect.bounds {
           }
         },
         get height() {
-          return station.height + style.railwayUnit * 2 + (help.length ? style.helperHeight : 0);
+          return station.height + style.railwayUnit * 2 + (annotation.length ? style.annotationHeight : 0);
         },
         get connectors() {
           if (useInsideConnectors) {
             if (station.hasHorizontalPadding) {
               // MEMO: Optimization for `Border(Shortcut(...))`, ...
               return [
-                { x: station.connectors[0].x, y: station.connectors[0].y + style.railwayUnit + (help.length ? style.helperHeight : 0) },
-                { x: station.connectors[1].x, y: station.connectors[1].y + style.railwayUnit + (help.length ? style.helperHeight : 0) },
+                { x: station.connectors[0].x, y: station.connectors[0].y + style.railwayUnit + (annotation.length ? style.annotationHeight : 0) },
+                { x: station.connectors[1].x, y: station.connectors[1].y + style.railwayUnit + (annotation.length ? style.annotationHeight : 0) },
               ];
             } else {
               return [
-                { x: station.connectors[0].x + style.railwayUnit, y: station.connectors[0].y + style.railwayUnit + (help.length ? style.helperHeight : 0) },
-                { x: station.connectors[1].x + style.railwayUnit, y: station.connectors[1].y + style.railwayUnit + (help.length ? style.helperHeight : 0) },
+                { x: station.connectors[0].x + style.railwayUnit, y: station.connectors[0].y + style.railwayUnit + (annotation.length ? style.annotationHeight : 0) },
+                { x: station.connectors[1].x + style.railwayUnit, y: station.connectors[1].y + style.railwayUnit + (annotation.length ? style.annotationHeight : 0) },
               ];
             }
           } else {
             return [
-              { x: 0, y: station.connectors[0].y + style.railwayUnit + (help.length ? style.helperHeight : 0) },
-              { x: this.width, y: station.connectors[1].y + style.railwayUnit + (help.length ? style.helperHeight : 0) },
+              { x: 0, y: station.connectors[0].y + style.railwayUnit + (annotation.length ? style.annotationHeight : 0) },
+              { x: this.width, y: station.connectors[1].y + style.railwayUnit + (annotation.length ? style.annotationHeight : 0) },
             ];
           }
         },
         // g
-        //   text.helper?
+        //   text.annotation?
         //   rect.border
         //   station
         render(dx = 0, dy = 0) {
           const g = createElement('g', { class: 'regexp-diagram-border', transform: `translate(${dx}, ${dy})` });
-          if (help.length) {
+          if (annotation.length) {
             g.appendChild('text', {
-              class: 'helper',
+              class: 'annotation',
               x: 0,
-              y: textMetrics.fontBoundingBoxAscent + (style.helperHeight - textMetrics.height) / 2,
-            }).value.textContent = help;
+              y: textMetrics.fontBoundingBoxAscent + (style.annotationHeight - textMetrics.height) / 2,
+            }).value.textContent = annotation;
           }
           g.appendChild('rect', {
             class: 'border',
             x: 0,
-            y: help.length ? style.helperHeight : 0,
+            y: annotation.length ? style.annotationHeight : 0,
             width: this.width,
             height: station.height + style.railwayUnit * 2,
           });
-          g.value.appendChild(station.render(station.hasHorizontalPadding ? 0 : style.railwayUnit, style.railwayUnit + (help.length ? style.helperHeight : 0)).value);
+          g.value.appendChild(station.render(station.hasHorizontalPadding ? 0 : style.railwayUnit, style.railwayUnit + (annotation.length ? style.annotationHeight : 0)).value);
           return g;
         }
       };

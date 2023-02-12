@@ -31,33 +31,33 @@ export function makeDiagramSvg(style = defaultStyle) {
     if (token.repeat) {
       const repeat = token.repeat;
       if (repeat.max != 1) {
-        let help: string = '';
+        let annotation: string = '';
         if (repeat.min >= 2 || repeat.max >= 2) {
           if (!isFinite(repeat.max)) {
             if (repeat.min >= 2) {
-              help = `${repeat.min - 1}+ times`;
+              annotation = `${repeat.min - 1}+ times`;
             } else {
-              help = '';
+              annotation = '';
             }
           } else if (repeat.min == repeat.max) {
             if (repeat.min == 2) {
-              help = 'once';
+              annotation = 'once';
             } else {
-              help = `${repeat.min - 1} times`;
+              annotation = `${repeat.min - 1} times`;
             }
           } else {
             if (repeat.min <= 1) {
               if (repeat.max == 2) {
-                help = 'at most once';
+                annotation = 'at most once';
               } else {
-                help = `at most ${repeat.max - 1} times`;
+                annotation = `at most ${repeat.max - 1} times`;
               }
             } else {
-              help = `${repeat.min - 1}..${repeat.max - 1} times`;
+              annotation = `${repeat.min - 1}..${repeat.max - 1} times`;
             }
           }
         }
-        station = railwayMaker.Loop(station, help, !repeat.nonGreedy);
+        station = railwayMaker.Loop(station, annotation, !repeat.nonGreedy);
       }
       if (repeat.min == 0) {
         station = railwayMaker.Shortcut(station);
