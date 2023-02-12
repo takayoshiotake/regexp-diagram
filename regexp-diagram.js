@@ -636,10 +636,11 @@ rect.bounds {
           for (let i = 0; i < this.stations.length; ++i) {
             const station = this.stations[i];
             g.value.appendChild(station.render(childX, connectorLevel - station.connectors[0].y).value);
-            if (i < this.stations.length - 1) {
+            // MEMO: Draw the railway on the front of the station background-color
+            if (i > 0) {
               g.appendChild('path', { class: 'railway', d: pathD(`
-                M ${childX + station.connectors[1].x} ${this.connectors[0].y}
-                H ${childX + station.width + style.railwayUnit + this.stations[i + 1].connectors[0].x}
+                M ${childX - stations[i - 1].width - style.railwayUnit + stations[i - 1].connectors[1].x} ${this.connectors[0].y}
+                H ${childX + station.connectors[0].x}
               `) });
             }
             childX += station.width + style.railwayUnit;
