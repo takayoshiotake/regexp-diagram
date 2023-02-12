@@ -1,4 +1,4 @@
-const defaultStyle = {
+export const defaultStyle = {
   stationHeight: 24,
   characterFontSize: 16,
   characterFontFamily: 'Arial',
@@ -15,40 +15,7 @@ const defaultStyle = {
   wrap: 600,
 };
 
-export function makeDiagramSvg(style = defaultStyle) {
-  const mergedStyle = {
-    ...defaultStyle,
-    ...style,
-  };
-  const railwayMaker = RailwayMaker(mergedStyle);
-
-  const stations = testStations(railwayMaker);
-  // DEBUG
-  for (let i = 0; i < stations.length; ++i) {
-    stations[i] = railwayMaker.Bounds(stations[i]);
-  }
-
-  const routes = [];
-  let route = railwayMaker.StraightRoute([]);
-  for (let i = 0; i < stations.length; ++i) {
-    if (route.width > mergedStyle.wrap) {
-      routes.push(route);
-      route = railwayMaker.StraightRoute([]);
-    }
-    route.stations.push(stations[i]);
-  }
-  routes.push(route);
-  const wrapping = railwayMaker.Bounds(railwayMaker.Wrapping(routes));
-
-  const svg = railwayMaker.StyledSvgTag();
-  svg.value.setAttribute('width', wrapping.width + mergedStyle.railwayWidth / 2 * 2);
-  svg.value.setAttribute('height', wrapping.height + mergedStyle.railwayWidth / 2 * 2);
-  let g = svg.appendChild('g', {transform: `translate(${mergedStyle.railwayWidth / 2}, ${mergedStyle.railwayWidth / 2})`});
-  g.value.appendChild(wrapping.render().value);
-  return svg.value;
-}
-
-function RailwayMaker(style = defaultStyle) {
+export function RailwayMaker(style = defaultStyle) {
   const measureCharacterText = text => measureText(text, `${style.characterFontSize}px ${style.characterFontFamily}`);
   const measureHelperText = text => measureText(text, `${style.helperFontSize}px ${style.helperFontFamily}`);
 
