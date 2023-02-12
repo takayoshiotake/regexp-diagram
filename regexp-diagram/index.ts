@@ -1,4 +1,3 @@
-import { stat } from 'fs';
 import { RailwayMaker, defaultStyle } from './railway-maker.js';
 
 export function makeDiagramSvg(style = defaultStyle) {
