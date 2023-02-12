@@ -9,10 +9,6 @@ export const defaultStyle = {
   railwayWidth: 2,
   railwayUnit: 12,
   arrowSize: 12,
-
-  // wrap: Infinity,
-  // wrap: 0,
-  wrap: 600,
 };
 
 export function RailwayMaker(style = defaultStyle) {
