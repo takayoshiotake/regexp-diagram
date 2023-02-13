@@ -26,11 +26,10 @@ export function makeDiagramSvg(style = defaultStyle) {
   const routes: any[] = [];
   let route = railwayMaker.StraightRoute([]);
   for (let i = 0; i < stations.length; ++i) {
-    // FIXME: optimize to access route width, because it is too slow
-    // if (route.width > mergedStyle.wrap) {
-    //   routes.push(route);
-    //   route = railwayMaker.StraightRoute([]);
-    // }
+    if (route.width > mergedStyle.wrap) {
+      routes.push(route);
+      route = railwayMaker.StraightRoute([]);
+    }
     route.stations.push(stations[i]);
   }
   routes.push(route);
