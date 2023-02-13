@@ -1,14 +1,15 @@
 import { RailwayMaker, defaultStyle } from './railway-maker.js';
 
 export function makeDiagramSvg(style = defaultStyle) {
-  const parsed = parseRegExp(/-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/);
+  // const parsed = parseRegExp(/-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/);
+  const parsed = parseRegExp(/([eE])?(a?)(a)?/);
   console.log(parsed);
 
   const mergedStyle = {
     ...defaultStyle,
     // wrap: Infinity,
     // wrap: 0,
-    wrap: 600,
+    wrap: 1000,
 
     ...style,
   };
@@ -25,10 +26,11 @@ export function makeDiagramSvg(style = defaultStyle) {
   const routes: any[] = [];
   let route = railwayMaker.StraightRoute([]);
   for (let i = 0; i < stations.length; ++i) {
-    if (route.width > mergedStyle.wrap) {
-      routes.push(route);
-      route = railwayMaker.StraightRoute([]);
-    }
+    // FIXME: optimize to access route width, because it is too slow
+    // if (route.width > mergedStyle.wrap) {
+    //   routes.push(route);
+    //   route = railwayMaker.StraightRoute([]);
+    // }
     route.stations.push(stations[i]);
   }
   routes.push(route);
@@ -84,7 +86,8 @@ function convertTokensToStations(railwayMaker, tokens) {
         break;
       case TokenType.Group:
         station = railwayMaker.Border(
-          railwayMaker.StraightRoute(convertTokensToStations(railwayMaker, token.value as Token[]))
+          railwayMaker.StraightRoute(convertTokensToStations(railwayMaker, token.value as Token[])),
+          token.groupName ? `group <${token.groupName}>` : (token.groupNumber != null ? `group #${token.groupNumber}` : 'group'),
         );
         break;
       default:
@@ -452,8 +455,7 @@ function readToken(context, pattern, firstIndex): [Token, number] {
               pattern.slice(re.lastIndex, i - re.lastIndex),
               firstIndex + re.lastIndex,
             ),
-            // TODO
-            // groupName,
+            groupName,
           }, i + 1,
         ];
       }
@@ -516,8 +518,7 @@ function readToken(context, pattern, firstIndex): [Token, number] {
         {
           type: TokenType.Group,
           value: readTokens(context, pattern.slice(1, i), firstIndex + 1),
-          // TODO:
-          //groupNumber,
+          groupNumber,
         },
         i + 1,
       ];
@@ -847,6 +848,8 @@ type Token = {
   value: any,
   repeat?: any,
   isNegativeSelection?: boolean,
+  groupName?: string,
+  groupNumber?: number,
   _textRange?: {
     firstIndex: number,
     lastIndex: number,
