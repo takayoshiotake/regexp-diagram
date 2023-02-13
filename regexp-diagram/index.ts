@@ -1,7 +1,7 @@
 import { RailwayMaker, defaultStyle } from './railway-maker.js';
 
 export function makeDiagramSvg(style = defaultStyle) {
-  const parsed = parseRegExp(/-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/);
+  const parsed = parseRegExp(/(?=a)(?!a)(?<=a)(?<!a)/);
   // const parsed = parseRegExp(/([eE])?(a|b)?(a?)(a)?a*(a+)/);
   console.log(parsed);
 
@@ -86,7 +86,11 @@ function convertTokensToStations(railwayMaker, tokens) {
       case TokenType.Group:
         station = railwayMaker.Border(
           railwayMaker.StraightRoute(convertTokensToStations(railwayMaker, token.value as Token[])),
-          token.groupName ? `group <${token.groupName}>` : (token.groupNumber != null ? `group #${token.groupNumber}` : 'group'),
+          token.lookahead ? `${token.lookahead} lookahead` : (
+            token.lookbehind ? `${token.lookbehind} lookbehind` : (
+              token.groupName ? `group <${token.groupName}>` : (token.groupNumber != null ? `group #${token.groupNumber}` : 'group')
+            )
+          ),
         );
         break;
       default:
@@ -469,46 +473,46 @@ function readToken(context, pattern, firstIndex): [Token, number] {
         },
         i + 1,
       ];
-    // } else if (pattern.startsWith('(?=')) {
-    //   // lookahead
-    //   return {
-    //     station: {
-    //       type: 'group',
-    //       value: this._readStations(pattern.substr(3, i - 3), firstIndex + 3),
-    //       lookahead: 'positive',
-    //     },
-    //     lastIndex: i + 1,
-    //   };
-    // } else if (pattern.startsWith('(?!')) {
-    //   // lookahead
-    //   return {
-    //     station: {
-    //       type: 'group',
-    //       value: this._readStations(pattern.substr(3, i - 3), firstIndex + 3),
-    //       lookahead: 'negative',
-    //     },
-    //     lastIndex: i + 1,
-    //   };
-    // } else if (pattern.startsWith('(?<=')) {
-    //   // lookbehind
-    //   return {
-    //     station: {
-    //       type: 'group',
-    //       value: this._readStations(pattern.substr(4, i - 4), firstIndex + 4),
-    //       lookbehind: 'positive',
-    //     },
-    //     lastIndex: i + 1,
-    //   };
-    // } else if (pattern.startsWith('(?<!')) {
-    //   // lookbehind
-    //   return {
-    //     station: {
-    //       type: 'group',
-    //       value: this._readStations(pattern.substr(4, i - 4), firstIndex + 4),
-    //       lookbehind: 'negative',
-    //     },
-    //     lastIndex: i + 1,
-    //   };
+    } else if (pattern.startsWith('(?=')) {
+      // lookahead
+      return [
+        {
+          type: TokenType.Group,
+          value: readTokens(context, pattern.slice(3, i), firstIndex + 3),
+          lookahead: 'positive',
+        },
+        i + 1,
+      ];
+    } else if (pattern.startsWith('(?!')) {
+      // lookahead
+      return [
+        {
+          type: TokenType.Group,
+          value: readTokens(context, pattern.slice(3, i), firstIndex + 3),
+          lookahead: 'negative',
+        },
+        i + 1,
+      ];
+    } else if (pattern.startsWith('(?<=')) {
+      // lookbehind
+      return [
+        {
+          type: TokenType.Group,
+          value: readTokens(context, pattern.slice(4, i), firstIndex + 4),
+          lookbehind: 'positive',
+        },
+        i + 1,
+      ];
+    } else if (pattern.startsWith('(?<!')) {
+      // lookbehind
+      return [
+        {
+          type: TokenType.Group,
+          value: readTokens(context, pattern.substr(4, i - 4), firstIndex + 4),
+          lookbehind: 'negative',
+        },
+        i + 1,
+      ];
     } else {
       // capturing parentheses
       context.groupNumber += 1;
@@ -849,6 +853,8 @@ type Token = {
   isNegativeSelection?: boolean,
   groupName?: string,
   groupNumber?: number,
+  lookahead?: string,
+  lookbehind?: string,
   _textRange?: {
     firstIndex: number,
     lastIndex: number,
