@@ -240,6 +240,10 @@ rect.bounds {
     Loop(station, annotation = '', isGreedy = true) {
       const textMetrics = measureAnnotationText(annotation);
       return {
+        // XXX: This is Loop
+        get isLoop() {
+          return true;
+        },
         get width() {
           return Math.max(station.width + style.railwayUnit * 2, style.railwayUnit + textMetrics.roundedWidth);
         },
@@ -296,8 +300,7 @@ rect.bounds {
       return {
         get width() {
           // MEMO: Optimization for `Shortcut(Loop(...))`
-          const spaceLeft = station.connectors[0].x;
-          const spaceRight = station.width - station.connectors[1].x;
+          const [spaceLeft, spaceRight] = station.isLoop ? [station.connectors[0].x, station.width - station.connectors[1].x] : [0, 0];
           return station.width + style.railwayUnit * 4 - spaceLeft - spaceRight;
         },
         get height() {
@@ -321,7 +324,7 @@ rect.bounds {
           const g = createElement('g', { class: 'regexp-diagram-shortcut', transform: `translate(${dx}, ${dy})` });
 
           // MEMO: Optimization for `Shortcut(Loop(...))`
-          const spaceLeft = station.connectors[0].x;
+          const spaceLeft = station.isLoop ? station.connectors[0].x : 0;
           g.value.appendChild(station.render(style.railwayUnit * 2 - spaceLeft, style.arrowSize / 2 + style.railwayUnit * 2).value);
 
           g.appendChild('path', { class: 'railway', d: pathD(`
@@ -338,7 +341,9 @@ rect.bounds {
             q ${style.railwayUnit} 0,${style.railwayUnit} ${style.railwayUnit}
             V ${station.connectors[0].y + style.arrowSize / 2 + style.railwayUnit * 2 - style.railwayUnit}
             q 0 ${style.railwayUnit},${style.railwayUnit} ${style.railwayUnit}
-            M ${this.width - style.railwayUnit * 2} ${station.connectors[1].y + style.arrowSize / 2 + style.railwayUnit * 2}
+            H ${station.connectors[0].x + style.railwayUnit * 2 - spaceLeft}
+            M ${station.connectors[1].x + style.railwayUnit * 2 - spaceLeft} ${station.connectors[1].y + style.arrowSize / 2 + style.railwayUnit * 2}
+            H ${this.width - style.railwayUnit * 2}
             q ${style.railwayUnit} 0,${style.railwayUnit} ${-style.railwayUnit}
             V ${this.connectors[1].y + style.railwayUnit}
             q 0 ${-style.railwayUnit},${style.railwayUnit} ${-style.railwayUnit}

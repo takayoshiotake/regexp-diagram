@@ -1,8 +1,8 @@
 import { RailwayMaker, defaultStyle } from './railway-maker.js';
 
 export function makeDiagramSvg(style = defaultStyle) {
-  // const parsed = parseRegExp(/-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/);
-  const parsed = parseRegExp(/([eE])?(a?)(a)?/);
+  const parsed = parseRegExp(/-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/);
+  // const parsed = parseRegExp(/([eE])?(a|b)?(a?)(a)?a*(a+)/);
   console.log(parsed);
 
   const mergedStyle = {
