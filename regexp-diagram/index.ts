@@ -1,10 +1,8 @@
 import { RailwayMaker, defaultStyle } from './railway-maker.js';
 
 export function makeDiagramSvg(style = defaultStyle) {
-  const parsed = parseRegExp(/te?st+t+?e{0,4}s{3}t{2,}/);
-  const concatenated = concatenateCharacterTokens(parsed);
+  const parsed = parseRegExp(/-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/);
   console.log(parsed);
-  console.log(concatenated);
 
   const mergedStyle = {
     ...defaultStyle,
@@ -16,13 +14,78 @@ export function makeDiagramSvg(style = defaultStyle) {
   };
   const railwayMaker = RailwayMaker(mergedStyle);
 
-  // const stations = testStations(railwayMaker);
+  // let stations = testStations(railwayMaker);
+  let stations = convertTokensToStations(railwayMaker, parsed);
+  stations = [
+    railwayMaker.TerminalStation(),
+    ...stations,
+    railwayMaker.TerminalStation(),
+  ];
+
+  const routes: any[] = [];
+  let route = railwayMaker.StraightRoute([]);
+  for (let i = 0; i < stations.length; ++i) {
+    if (route.width > mergedStyle.wrap) {
+      routes.push(route);
+      route = railwayMaker.StraightRoute([]);
+    }
+    route.stations.push(stations[i]);
+  }
+  routes.push(route);
+  const wrapping = railwayMaker.Bounds(railwayMaker.Wrapping(routes));
+
+  const svg = railwayMaker.StyledSvgTag();
+  svg.value.setAttribute(
+    'width',
+    wrapping.width + (mergedStyle.railwayWidth / 2) * 2
+  );
+  svg.value.setAttribute(
+    'height',
+    wrapping.height + (mergedStyle.railwayWidth / 2) * 2
+  );
+  let g = svg.appendChild('g', {
+    transform: `translate(${mergedStyle.railwayWidth / 2}, ${
+      mergedStyle.railwayWidth / 2
+    })`,
+  });
+  g.value.appendChild(wrapping.render().value);
+  return svg.value;
+}
+
+function convertTokensToStations(railwayMaker, tokens) {
   const stations: any[] = [];
-  for (let token of concatenated) {
+  for (let token of tokens) {
     let station: any;
     switch (token.type) {
+      case TokenType.Branch:
+        station = railwayMaker.Switch(
+          (token.value as Token[][]).map((subTokens) =>
+            railwayMaker.StraightRoute(
+              convertTokensToStations(railwayMaker, subTokens)
+            )
+          )
+        );
+        break;
       case TokenType.Character:
         station = railwayMaker.CharacterStation(token.value as string);
+        break;
+      case TokenType.CharacterRange:
+        station = railwayMaker.RangeStation(
+          railwayMaker.CharacterStation(token.value[0].value as string),
+          railwayMaker.CharacterStation(token.value[1].value as string),
+          false,
+        );
+        break;
+      case TokenType.Classified:
+        station = railwayMaker.CharacterStation(token.value as string, true);
+        break;
+      case TokenType.Selection:
+        station = railwayMaker.SelectionStation(convertTokensToStations(railwayMaker, token.value as Token[]));
+        break;
+      case TokenType.Group:
+        station = railwayMaker.Border(
+          railwayMaker.StraightRoute(convertTokensToStations(railwayMaker, token.value as Token[]))
+        );
         break;
       default:
         throw '';
@@ -70,25 +133,7 @@ export function makeDiagramSvg(style = defaultStyle) {
   for (let i = 0; i < stations.length; ++i) {
     stations[i] = railwayMaker.Bounds(stations[i]);
   }
-
-  const routes: any[] = [];
-  let route = railwayMaker.StraightRoute([]);
-  for (let i = 0; i < stations.length; ++i) {
-    if (route.width > mergedStyle.wrap) {
-      routes.push(route);
-      route = railwayMaker.StraightRoute([]);
-    }
-    route.stations.push(stations[i]);
-  }
-  routes.push(route);
-  const wrapping = railwayMaker.Bounds(railwayMaker.Wrapping(routes));
-
-  const svg = railwayMaker.StyledSvgTag();
-  svg.value.setAttribute('width', wrapping.width + mergedStyle.railwayWidth / 2 * 2);
-  svg.value.setAttribute('height', wrapping.height + mergedStyle.railwayWidth / 2 * 2);
-  let g = svg.appendChild('g', {transform: `translate(${mergedStyle.railwayWidth / 2}, ${mergedStyle.railwayWidth / 2})`});
-  g.value.appendChild(wrapping.render().value);
-  return svg.value;
+  return stations;
 }
 
 function testStations(railwayMaker) {
@@ -205,7 +250,7 @@ function testStations(railwayMaker) {
         railwayMaker.CharacterStation(
           'a',
           true
-        ),
+      ),
         'inner border text ...'
       ),
       'outer border text ...'
@@ -248,15 +293,15 @@ function testStations(railwayMaker) {
         railwayMaker.CharacterStation('1'),
         railwayMaker.Loop(railwayMaker.CharacterStation('a', true), 'once'),
         railwayMaker.Shortcut(railwayMaker.CharacterStation('a', true)),
-        railwayMaker.Shortcut(
-          railwayMaker.Loop(
+      railwayMaker.Shortcut(
+        railwayMaker.Loop(
             railwayMaker.SelectionStation(
               [
                 railwayMaker.CharacterStation('1'),
                 railwayMaker.CharacterStation('a', true),
                 railwayMaker.RangeStation(railwayMaker.CharacterStation('0'), railwayMaker.CharacterStation('9'), false),
               ]
-            )
+        )
           )
         )
       ]
@@ -285,7 +330,7 @@ function parseRegExp(regexp) {
     groupNames: [],
   };
 
-  let pattern
+  let pattern;
   if (typeof regexp === 'string') {
     // TODO: Check flags and remove '/' on head and tail if needed...
     pattern = regexp;
@@ -296,18 +341,21 @@ function parseRegExp(regexp) {
     }
 
     pattern = regexp.source;
-  }
-  else {
+  } else {
     throw `Error: Not supported parameter type for regexp: type=${typeof regexp}`;
   }
 
-  return readTokens(context, pattern, 0);
+  return readTokens(context, pattern);
 }
 
-function readTokens(context, pattern, firstIndex) {
+function readTokens(context, pattern, firstIndex = 0) {
   const tokens: Token[] = [];
   while (pattern.length > 0) {
-    const [ token, length ] = readToken(context, pattern, firstIndex);
+    const [token, length] = readToken(context, pattern, firstIndex);
+    token._textRange = {
+      firstIndex,
+      lastIndex: firstIndex + length,
+    };
     firstIndex += length;
 
     if (token.type === TokenType.Repeat) {
@@ -338,7 +386,10 @@ function readTokens(context, pattern, firstIndex) {
 
     pattern = pattern.slice(length);
   }
-  return tokens;
+
+  const concatenated = concatenateCharacterTokens(tokens);
+  const calculated = calculate(concatenated);
+  return calculated;
 }
 
 /**
@@ -349,7 +400,129 @@ function readTokens(context, pattern, firstIndex) {
  * @throws {string} error message when failed to parse the `pattern`
  */
 function readToken(context, pattern, firstIndex): [Token, number] {
-  let length: number = 1;
+  // Operator
+  if (pattern[0] === '|') {
+    return [
+      {
+        type: TokenType.Operator,
+        value: '|',
+      },
+      1,
+    ];
+  }
+
+  // group
+  if (pattern[0] == '(') {
+    let i;
+    let nest = 1;
+    for (i = 1; i < pattern.length; ++i) {
+      let c = pattern[i];
+      if (c == '(') {
+        nest += 1;
+      } else if (c == ')') {
+        nest -= 1;
+      } else if (c == '\\') {
+        i += 1; // skip next character
+      }
+      if (nest == 0) {
+        break;
+      }
+    }
+    if (nest != 0) {
+      throw `Syntax error: missing ')'`;
+    }
+
+    // supportsNamedGroup
+    {
+      let groupText = pattern.substr(0, i + 1);
+      let re = /^\(\?<([^>]+)>/g;
+      let result = re.exec(groupText);
+      if (result) {
+        let groupName = result[1];
+        if (context.groupNames.indexOf(groupName) != -1) {
+          throw `Syntax error: duplicated group name '${groupName}'`;
+        }
+        context.groupNames.push(groupName);
+        // named group
+        return [
+          {
+            type: TokenType.Group,
+            value: readTokens(
+              context,
+              pattern.slice(re.lastIndex, i - re.lastIndex),
+              firstIndex + re.lastIndex,
+            ),
+            // TODO
+            // groupName,
+          }, i + 1,
+        ];
+      }
+    }
+
+    if (pattern.startsWith('(?:')) {
+      // non-capturing parentheses
+      return [
+        {
+          type: TokenType.Group,
+          value: readTokens(context, pattern.slice(3, i), firstIndex + 3),
+        },
+        i + 1,
+      ];
+    // } else if (pattern.startsWith('(?=')) {
+    //   // lookahead
+    //   return {
+    //     station: {
+    //       type: 'group',
+    //       value: this._readStations(pattern.substr(3, i - 3), firstIndex + 3),
+    //       lookahead: 'positive',
+    //     },
+    //     lastIndex: i + 1,
+    //   };
+    // } else if (pattern.startsWith('(?!')) {
+    //   // lookahead
+    //   return {
+    //     station: {
+    //       type: 'group',
+    //       value: this._readStations(pattern.substr(3, i - 3), firstIndex + 3),
+    //       lookahead: 'negative',
+    //     },
+    //     lastIndex: i + 1,
+    //   };
+    // } else if (pattern.startsWith('(?<=')) {
+    //   // lookbehind
+    //   return {
+    //     station: {
+    //       type: 'group',
+    //       value: this._readStations(pattern.substr(4, i - 4), firstIndex + 4),
+    //       lookbehind: 'positive',
+    //     },
+    //     lastIndex: i + 1,
+    //   };
+    // } else if (pattern.startsWith('(?<!')) {
+    //   // lookbehind
+    //   return {
+    //     station: {
+    //       type: 'group',
+    //       value: this._readStations(pattern.substr(4, i - 4), firstIndex + 4),
+    //       lookbehind: 'negative',
+    //     },
+    //     lastIndex: i + 1,
+    //   };
+    } else {
+      // capturing parentheses
+      context.groupNumber += 1;
+      let groupNumber = context.groupNumber;
+      return [
+        {
+          type: TokenType.Group,
+          value: readTokens(context, pattern.slice(1, i), firstIndex + 1),
+          // TODO:
+          //groupNumber,
+        },
+        i + 1,
+      ];
+    }
+  }
 
   // Repeat
   if (pattern[0] === '*') {
@@ -357,92 +530,256 @@ function readToken(context, pattern, firstIndex): [Token, number] {
       {
         type: TokenType.Repeat,
         value: { min: 0, max: Infinity },
-        _textRange: {
-          firstIndex,
-          lastIndex: firstIndex + length,
-        },
       },
-      length,
+      1,
     ];
   } else if (pattern[0] === '+') {
     return [
       {
         type: TokenType.Repeat,
         value: { min: 1, max: Infinity },
-        _textRange: {
-          firstIndex,
-          lastIndex: firstIndex + length,
-        },
       },
-      length,
+      1,
     ];
   } else if (pattern[0] === '?') {
     return [
       {
         type: TokenType.Repeat,
         value: '?',
-        _textRange: {
-          firstIndex,
-          lastIndex: firstIndex + length,
-        },
       },
-      length,
+      1,
     ];
   } else {
     let re = /^\{(\d+)(,(\d+)?)?\}/g;
     let result = re.exec(pattern);
     if (result) {
-      length = re.lastIndex;
       if (result[3]) {
+        // e.g. /{2,3}/
         return [
           {
             type: TokenType.Repeat,
             value: { min: result[1], max: result[3] },
-            _textRange: {
-              firstIndex,
-              lastIndex: firstIndex + length,
-            },
           },
-          length,
+          re.lastIndex,
         ];
       } else if (result[2]) {
+        // e.g. /{2,}/
         return [
           {
             type: TokenType.Repeat,
             value: { min: result[1], max: Infinity },
-            _textRange: {
-              firstIndex,
-              lastIndex: firstIndex + length,
-            },
           },
-          length,
+          re.lastIndex,
+        ];
+      } else {
+        // e.g. /{2}/
+        return [
+          {
+            type: TokenType.Repeat,
+            value: { min: result[1], max: result[1] },
+          },
+          re.lastIndex,
         ];
       }
-      return [
-        {
-          type: TokenType.Repeat,
-          value: { min: result[1], max: result[1] },
-          _textRange: {
-            firstIndex,
-            lastIndex: firstIndex + length,
-          },
-        },
-        length,
-      ];
     }
   }
 
+  // Classified
+  for (const classified in ClassifiedStringTable) {
+    if (pattern.startsWith(classified)) {
+      return [
+        {
+          type: TokenType.Classified,
+          value: ClassifiedStringTable[classified],
+        },
+        classified.length,
+      ];
+    }
+  }
+  // Classified: \cX, \xhh, \uhhhh
+  {
+    {
+      let re = /^\\c([A-Za-z])/g;
+      let result = re.exec(pattern);
+      if (result) {
+        let letter = result[1].toUpperCase();
+        let hex = (letter.charCodeAt(0) - 'A'.charCodeAt(0) + 1)
+          .toString(16)
+          .padStart(2, '0');
+        return [
+          {
+            type: TokenType.Classified,
+            value: `ctrl-${letter} (0x${hex})`,
+          },
+          re.lastIndex,
+        ];
+      }
+    }
+    {
+      let re = /^\\x([0-9A-Za-z]{2})/g;
+      let result = re.exec(pattern);
+      if (result) {
+        let hex = result[1].toUpperCase();
+        return [
+          {
+            type: TokenType.Classified,
+            value: `0x${hex}`,
+          },
+          re.lastIndex,
+        ];
+      }
+    }
+    {
+      let re = /^\\u([0-9A-Za-z]{4})/g;
+      let result = re.exec(pattern);
+      if (result) {
+        let hex = result[1].toUpperCase();
+        return [
+          {
+            type: TokenType.Classified,
+            value: `U+${hex}`,
+          },
+          re.lastIndex,
+        ];
+      }
+    }
+  }
+
+  // selection (characterSet)
+  {
+    let re = /^\[(.*?(?:[^\\](?=])|\\\\(?=])))\]/g;
+    let result = re.exec(pattern);
+    if (result) {
+      let value = result[1];
+      if (value.length > 0 && value[0] == '^') {
+        value = value.slice(1);
+        return [
+          {
+            type: TokenType.Selection,
+            value: listSelection(context, value, firstIndex),
+            isNegativeSelection: true,
+          },
+          re.lastIndex,
+        ];
+      } else {
+        return [
+          {
+            type: TokenType.Selection,
+            value: listSelection(context, value, firstIndex),
+          },
+          re.lastIndex,
+        ];
+      }
+    }
+  }
+
+  // Character (escape sequence)
+  if (pattern[0] === '\\') {
+    if (pattern.length > 1) {
+      if ('123456789'.indexOf(pattern[1]) !== -1) {
+        return [
+          {
+            type: TokenType.Classified,
+            value: `ref #${pattern[1]}`,
+          },
+          2,
+        ];
+      }
+
+      // supportsNamedGroup
+      {
+        let re = /^\\k<([^>]+)>/g;
+        let result = re.exec(pattern);
+        if (result) {
+          // named reference
+          return [
+            {
+              type: TokenType.Classified,
+              value: `ref <${result[1]}>`,
+            },
+            re.lastIndex,
+          ];
+        }
+      }
+
+      // NOTE: on-effective escape sequence
+      return [
+        {
+          type: TokenType.Character,
+          value: pattern[1],
+        },
+        2,
+      ];
+    } else {
+      throw `Syntax error: invalid escape sequence`;
+    }
+  }
+
+  // Single character
   return [
     {
       type: TokenType.Character,
       value: pattern[0],
-      _textRange: {
-        firstIndex,
-        lastIndex: firstIndex + length,
-      },
     },
-    length
+    1,
   ];
+}
+
+function listSelection(context, pattern, firstIndex): Token[] {
+  const tokens: Token[] = [];
+  // first '-' is character
+  if (pattern[0] == '-' && pattern.length > 0) {
+    tokens.push({
+      type: TokenType.Character,
+      value: '-',
+    });
+    pattern = pattern.slice(1);
+  }
+  while (pattern.length > 0) {
+    // HACK: read special character
+    if ('^$*+?.(|{['.indexOf(pattern[0]) != -1) {
+      tokens.push({
+          type: TokenType.Character,
+          value: pattern[0]
+      });
+      pattern = pattern.slice(1);
+    } else if (pattern[0] == '-') {
+      tokens.push({
+        type: TokenType.Operator,
+        value: pattern[0],
+      });
+      pattern = pattern.slice(1);
+    } else {
+      const [ token, length ] = readToken(context, pattern, firstIndex);
+      tokens.push(token);
+      pattern = pattern.slice(length);
+    }
+  }
+
+  let calculated: Token[] = [];
+  let merges = false;
+  for (let token of tokens) {
+    if (token.type === TokenType.Operator && token.value === '-') {
+      merges = true;
+      continue;
+    }
+    if (merges) {
+      let lastToken = calculated.pop()!;
+      calculated.push({
+        type: TokenType.CharacterRange,
+        value: [lastToken, token],
+      });
+      merges = false;
+    } else {
+      calculated.push(token);
+    }
+  }
+  if (merges) {
+    const lastToken = calculated.pop()!;
+    lastToken.type = TokenType.Character;
+    calculated.push(lastToken);
+  }
+  return calculated;
 }
 
 function concatenateCharacterTokens(tokens: Token[]): Token[] {
@@ -454,7 +791,9 @@ function concatenateCharacterTokens(tokens: Token[]): Token[] {
       const lastToken = concatenated.slice(-1)[0];
       if (lastToken.type === TokenType.Character && !lastToken.repeat && token.type === TokenType.Character && !token.repeat) {
         lastToken.value += token.value;
-        lastToken._textRange.lastIndex = token._textRange.lastIndex;
+        if (lastToken._textRange && token._textRange) {
+          lastToken._textRange.lastIndex = token._textRange.lastIndex;
+        }
       } else {
         concatenated.push({ ...token });
       }
@@ -463,9 +802,43 @@ function concatenateCharacterTokens(tokens: Token[]): Token[] {
   return concatenated;
 }
 
+function calculate(tokens) {
+  // Splits with operator '|' (branch)
+  if (!tokens.find(it => it.type === TokenType.Operator && it.value === '|')) {
+      return tokens;
+  }
+
+  // FIXME: The following should be able to simple...
+  let splitted: Token[][] = [];
+  var buf: Token[] = [];
+  for (let token of tokens) {
+      if (token.type === TokenType.Operator && token.value === '|') {
+          splitted.push(buf)
+          buf = [];
+      }
+      else {
+          buf.push(token)
+      }
+  }
+  splitted.push(buf)
+
+  return [
+    {
+      type: TokenType.Branch,
+      value: splitted
+    }
+  ];
+}
+
 const TokenType = {
+  Branch: 'Branch',
   Character: 'Character',
+  CharacterRange: 'CharacterRange',
+  Classified: 'Classified',
+  Group: 'Group',
   Repeat: 'Repeat',
+  Selection: 'Selection',
+  Operator: 'Operator',
 } as const;
 type TokenType = typeof TokenType[keyof typeof TokenType];
 
@@ -473,12 +846,34 @@ type Token = {
   type: TokenType,
   value: any,
   repeat?: any,
-  _textRange: {
+  isNegativeSelection?: boolean,
+  _textRange?: {
     firstIndex: number,
     lastIndex: number,
-  }
+  },
 };
 
+const ClassifiedStringTable = {
+  '^'    : 'beginning of line',
+  '$'    : 'end of line',
+  '.'    : 'any character',
+  '[\\b]': 'backspace (0x08)',
+  '\\b'  : 'word boundary',
+  '\\B'  : 'non-word boundary',
+  '\\d'  : 'digit', // [0-9]
+  '\\D'  : 'non-digit', // [^0-9]
+  '\\f'  : 'form feed (0x0C)',
+  '\\n'  : 'line feed (0x0A)',
+  '\\r'  : 'carriage return (0x0D)',
+  '\\s'  : 'white space',
+  '\\S'  : 'non-white space',
+  '\\t'  : 'tab (0x09)',
+  '\\v'  : 'vertical tab (0x0B)',
+  '\\w'  : 'word', // [A-Za-z0-9_]
+  '\\W'  : 'non-word', // [^A-Za-z0-9_]
+  '\\0'  : 'null (0x00)'
+} as const;
+
 function isRepeatable(token: Token): boolean {
-  return token.type === TokenType.Character;
+  return token.type === TokenType.Character || token.type === TokenType.Classified || token.type === TokenType.Group || token.type === TokenType.Selection;
 }
