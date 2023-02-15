@@ -1,0 +1,58 @@
+/* https://mui.com/material-ui/customization/color/ */
+/* https://mui.com/material-ui/customization/dark-mode/#dark-mode-with-a-custom-palette */
+:root {
+  --spacing: 12px;
+  --primary-color: #fff;
+  --secondary-color: rgba(255, 255, 255, 0.7);
+  --disabled-color: rgba(255, 255, 255, 0.5);
+  --background-color: #121212;
+  --divider-color: rgba(255, 255, 255, 0.12);
+
+  --textarea-background-color: #212121;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  padding: var(--spacing);
+}
+
+::placeholder {
+  color: var(--disabled-color);
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing);
+  color: var(--primary-color);
+  background-color: var(--background-color);
+}
+
+textarea {
+  height: 16ex;
+  resize: vertical;
+  box-sizing: border-box;
+  color: var(--primary-color);
+  background-color: var(--textarea-background-color);
+  border: 1px solid var(--divider-color);
+}
+
+textarea:focus {
+  outline: none;
+}
+
+svg {
+  background-color: #fff;
+}
+
+footer > * {
+  margin: 0;
+}
+
+#version {
+  color: var(--secondary-color);
+}

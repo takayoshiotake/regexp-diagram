@@ -6,15 +6,12 @@
     <title>regexp-diagram</title>
   </head>
   <body>
+    <textarea placeholder="Input RegExp here..."></textarea>
     <div id="diagram"></div>
-    <script type="module">
-      import { makeDiagramSvg } from './regexp-diagram';
-
-      performance.mark('start');
-      document.querySelector('#diagram').innerHTML = makeDiagramSvg().outerHTML;
-      performance.mark('end');
-      performance.measure('time', 'start', 'end');
-      console.log(performance.getEntriesByName('time')[0].duration);
-    </script>
+    <footer>
+      <p id="version"></p>
+      <p><a href="https://github.com/takayoshiotake/regexp-diagram">https://github.com/takayoshiotake/regexp-diagram</a></p>
+    </footer>
+    <script type="module" src="/main.js"></script>
   </body>
 </html>
