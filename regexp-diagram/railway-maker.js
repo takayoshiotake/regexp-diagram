@@ -16,7 +16,7 @@ export function RailwayMaker(style = defaultStyle) {
   const measureAnnotationText = text => measureText(text, `${style.annotationFontSize}px ${style.annotationFontFamily}`);
 
   return {
-    StyledSvgTag() {
+    StyledSvgTag(userStyle = '') {
       const svgTag = createElement('svg', {
         'version': '1.1',
         'xmlns': 'http://www.w3.org/2000/svg',
@@ -75,7 +75,7 @@ path.loop {
 }
 rect.border {
   fill: #F0F0F0;
-  stroke: gray;
+  stroke: black;
   stroke-width: ${style.railwayWidth}px;
   stroke-dasharray: 4 2;
 }
@@ -85,6 +85,7 @@ rect.bounds {
   stroke: magenta;
   stroke-width: 1px;
 }
+${userStyle}
       `);
       return svgTag;
     },
@@ -353,7 +354,7 @@ rect.bounds {
       }
     },
 
-    Border(station, annotation = '', useInsideConnectors = true) {
+    Border(station, annotation = '', useInsideConnectors = true, userClass = '') {
       const textMetrics = measureAnnotationText(annotation);
       return {
         get width() {
@@ -393,7 +394,7 @@ rect.bounds {
         //   rect.border
         //   station
         render(dx = 0, dy = 0) {
-          const g = createElement('g', { class: 'regexp-diagram-border', transform: `translate(${dx}, ${dy})` });
+          const g = createElement('g', { class: 'regexp-diagram-border' + (userClass ? ` ${userClass}` : ''), transform: `translate(${dx}, ${dy})` });
           if (annotation.length) {
             g.appendChild('text', {
               class: 'annotation',

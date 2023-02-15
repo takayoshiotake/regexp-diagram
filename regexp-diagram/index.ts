@@ -1,15 +1,16 @@
 import { RailwayMaker, defaultStyle } from './railway-maker.js';
 
 export function makeDiagramSvg(style = defaultStyle) {
-  const parsed = parseRegExp(/(?=a)(?!a)(?<=a)(?<!a)/);
+  // const parsed = parseRegExp(/(?=a)(?!a)(?<=a)(?<!a)/);
   // const parsed = parseRegExp(/([eE])?(a|b)?(a?)(a)?a*(a+)/);
+  const parsed = parseRegExp(/-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/);
   console.log(parsed);
 
   const mergedStyle = {
     ...defaultStyle,
     // wrap: Infinity,
     // wrap: 0,
-    wrap: 1000,
+    wrap: 640,
 
     ...style,
   };
@@ -26,7 +27,7 @@ export function makeDiagramSvg(style = defaultStyle) {
   const routes: any[] = [];
   let route = railwayMaker.StraightRoute([]);
   for (let i = 0; i < stations.length; ++i) {
-    if (route.width > mergedStyle.wrap) {
+    if (route.stations.length > 0 && route.width + stations[i].width > mergedStyle.wrap) {
       routes.push(route);
       route = railwayMaker.StraightRoute([]);
     }
@@ -35,7 +36,16 @@ export function makeDiagramSvg(style = defaultStyle) {
   routes.push(route);
   const wrapping = railwayMaker.Bounds(railwayMaker.Wrapping(routes));
 
-  const svg = railwayMaker.StyledSvgTag();
+  const svg = railwayMaker.StyledSvgTag(`
+.group > rect.border {
+  fill: #F0FFF0;
+  stroke: green;
+}
+rect.bounds {
+  /* stroke: magenta; */
+  stroke: none;
+}
+  `);
   svg.value.setAttribute(
     'width',
     wrapping.width + (mergedStyle.railwayWidth / 2) * 2
@@ -91,6 +101,8 @@ function convertTokensToStations(railwayMaker, tokens) {
               token.groupName ? `group <${token.groupName}>` : (token.groupNumber != null ? `group #${token.groupNumber}` : 'group')
             )
           ),
+          true,
+          'group'
         );
         break;
       default:
@@ -747,6 +759,18 @@ function listSelection(context, pattern, firstIndex): Token[] {
           value: pattern[0]
       });
       pattern = pattern.slice(1);
+    } else if (pattern.startsWith('\\b')) {
+      tokens.push({
+          type: TokenType.Classified,
+          value: 'backspace (0x08)'
+      });
+      pattern = pattern.slice(2);
+    } else if (pattern.startsWith('\\B') || pattern.startsWith('\\-') || pattern.startsWith('\\\\')) {
+      tokens.push({
+          type: TokenType.Classified,
+          value: pattern[1]
+      })
+      pattern = pattern.slice(2);
     } else if (pattern[0] == '-') {
       tokens.push({
         type: TokenType.Operator,
@@ -779,9 +803,11 @@ function listSelection(context, pattern, firstIndex): Token[] {
     }
   }
   if (merges) {
-    const lastToken = calculated.pop()!;
-    lastToken.type = TokenType.Character;
-    calculated.push(lastToken);
+    // last '-' is character
+    calculated.push({
+      type: TokenType.Character,
+      value: '-'
+    });
   }
   return calculated;
 }
