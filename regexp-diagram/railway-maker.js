@@ -623,7 +623,7 @@ ${userStyle}
       return {
         stations: stations,
         get width() {
-          return this.stations.map(s => s.width).reduce((a, b) => Math.max(a, b)) + (this.stations.length >= 2 ? style.railwayUnit * 4: 0);
+          return this.stations.map(s => s.width).reduce((a, b) => Math.max(a, b)) + (this.stations.length >= 2 ? style.railwayUnit * 2: 0);
         },
         get height() {
           return this.stations.map(s => s.height).reduce((a, b) => a + b + style.railwayUnit * 4);

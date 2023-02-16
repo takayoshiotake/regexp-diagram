@@ -55,9 +55,7 @@ rect.bounds {
     wrapping.height + (mergedStyle.railwayWidth / 2) * 2
   );
   let g = svg.appendChild('g', {
-    transform: `translate(${mergedStyle.railwayWidth / 2}, ${
-      mergedStyle.railwayWidth / 2
-    })`,
+    transform: `translate(${mergedStyle.railwayWidth / 2}, ${mergedStyle.railwayWidth / 2})`,
   });
   g.value.appendChild(wrapping.render().value);
   return svg.value;
