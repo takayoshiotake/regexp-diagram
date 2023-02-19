@@ -1,7 +1,7 @@
 import './style.css';
 import { makeDiagramSvg } from './regexp-diagram';
 
-document.querySelector('#version').innerHTML = `regexp-diagram 2.0.0-a1`;
+document.querySelector('#version').innerHTML = `regexp-diagram 2.0.0-a2`;
 
 const views = {
   regexpText: document.querySelector('#text-regexp'),
@@ -116,7 +116,7 @@ function render() {
 }
 
 function downloadSvg() {
-  const svgText = views.diagram.querySelector('svg');
+  const svgText = views.diagram.querySelector('svg').outerHTML;
   if (!svgText) {
     return;
   }
@@ -127,7 +127,7 @@ function downloadSvg() {
 }
 
 function downloadPng() {
-  const svgText = views.diagram.querySelector('svg');
+  const svgText = views.diagram.querySelector('svg').outerHTML;
   if (!svgText) {
     return;
   }
