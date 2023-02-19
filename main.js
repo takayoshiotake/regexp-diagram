@@ -83,7 +83,9 @@ function render() {
     console.log(performance.getEntriesByName('time')[0].duration);
   } catch (e) {
     console.warn(e);
-    views.diagram.innerHTML = `<p class="text-error">${e}</p>`;
+    views.diagram.innerHTML = `<p class="text-warning">${e}</p>`;
+    // xxx
+    views.diagram.style.height = 'auto';
   }
 }
 

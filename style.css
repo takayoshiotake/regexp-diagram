@@ -17,6 +17,7 @@ html {
     --primary-color: #fff;
     --secondary-color: rgba(255, 255, 255, 0.7);
     --disabled-color: rgba(255, 255, 255, 0.5);
+    --warning-color: orange;
     --background-color: #121212;
     --divider-color: rgba(255, 255, 255, 0.12);
     --textarea-background-color: #212121;
@@ -27,6 +28,7 @@ html {
     --primary-color: rgba(0, 0, 0, 0.87);
     --secondary-color: rgba(0, 0, 0, 0.6);
     --disabled-color: rgba(0, 0, 0, 0.38);
+    --warning-color: #B00020;
     --background-color: #fff;
     --divider-color: rgba(0, 0, 0, 0.12);
     --textarea-background-color: #fafafa;
@@ -66,8 +68,8 @@ body {
   gap: var(--spacing);
 }
 
-.text-error {
-  color: #B00020;
+.text-warning {
+  color: var(--warning-color);
 }
 
 footer * {
