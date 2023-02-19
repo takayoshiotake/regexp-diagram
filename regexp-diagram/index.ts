@@ -472,7 +472,7 @@ function readToken(context, pattern, firstIndex): [Token, number] {
             type: TokenType.Group,
             value: readTokens(
               context,
-              pattern.slice(re.lastIndex, i - re.lastIndex),
+              pattern.slice(re.lastIndex, i),
               firstIndex + re.lastIndex,
             ),
             groupName,
