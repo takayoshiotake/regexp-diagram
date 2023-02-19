@@ -36,7 +36,7 @@ function init() {
     views.regexpText.value = regexp;
   }
   if (views.regexpText.value === '') {
-    views.regexpText.value = '-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?';
+    views.regexpText.value = String.raw`-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?`;
   }
   render();
 }
