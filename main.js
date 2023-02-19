@@ -75,7 +75,18 @@ function render() {
       },
       false
     );
-    views.diagram.innerHTML = svg.outerHTML;
+    views.diagram.innerHTML = '';
+    views.diagram.appendChild(svg);
+
+    for (let selectable of svg.querySelectorAll('*[data-text-range]')) {
+      selectable.addEventListener('click', e => {
+        const textRange = selectable.getAttribute('data-text-range').split(',');
+        views.regexpText.focus();
+        views.regexpText.setSelectionRange(textRange[0], textRange[1]);
+        e.stopPropagation();
+      });
+    }
+
     // xxx
     views.diagram.style.height = svg.getAttribute('height') + 'px';
     performance.mark('end');

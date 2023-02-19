@@ -116,6 +116,9 @@ function convertTokensToStations(railwayMaker, tokens) {
       default:
         throw '';
     }
+    if (token._textRange) {
+      station.attributes = { 'data-text-range': `${token._textRange.firstIndex},${token._textRange.lastIndex}` };
+    }
     if (token.repeat) {
       const repeat = token.repeat;
       if (repeat.max != 1) {

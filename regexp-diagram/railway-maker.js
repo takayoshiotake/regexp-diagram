@@ -20,7 +20,7 @@ export function RailwayMaker(style = defaultStyle) {
       return style;
     },
     StyledSvgTag(userStyle = '') {
-      const svgTag = createElement('svg', {
+      const svgTag = createSvgElement('svg', {
         'version': '1.1',
         'xmlns': 'http://www.w3.org/2000/svg',
       });
@@ -108,7 +108,7 @@ ${userStyle}
         // g
         //   text
         render(dx = 0, dy = 0) {
-          const g = createElement('g', { class: 'regexp-diagram-hyphen', transform: `translate(${dx}, ${dy})` });
+          const g = createSvgElement('g', { class: 'regexp-diagram-hyphen', transform: `translate(${dx}, ${dy})` });
           const text = g.appendChild(
             'text',
             {
@@ -151,7 +151,7 @@ ${userStyle}
         //       tspan
         //       tspan.quotation
         render(dx = 0, dy = 0) {
-          const g = createElement('g', { class: 'regexp-diagram-characterstation', transform: `translate(${dx}, ${dy})` });
+          const g = createSvgElement('g', { class: 'regexp-diagram-characterstation', transform: `translate(${dx}, ${dy})` });
           g.appendChild(
             'rect',
             {
@@ -178,6 +178,11 @@ ${userStyle}
             text.appendChild('tspan').value.textContent = character;
             text.appendChild('tspan', { class: 'quotation' }).value.textContent = '”';
           }
+          if (this.attributes) {
+            for (let name in this.attributes) {
+              g.value.setAttribute(name, this.attributes[name]);
+            }
+          }
           return g;
         },
       }
@@ -199,7 +204,7 @@ ${userStyle}
           ];
         },
         render(dx = 0, dy = 0) {
-          const g = createElement('g', { class: 'regexp-diagram-terminalstation', transform: `translate(${dx}, ${dy})` });
+          const g = createSvgElement('g', { class: 'regexp-diagram-terminalstation', transform: `translate(${dx}, ${dy})` });
           g.appendChild('path', { class: 'railway', d: pathD(`
             M0 0
             V${this.height}
@@ -229,7 +234,7 @@ ${userStyle}
         // g
         //   rect
         render(dx = 0, dy = 0) {
-          const g = createElement('g', { class: 'regexp-diagram-bounds', transform: `translate(${dx}, ${dy})` });
+          const g = createSvgElement('g', { class: 'regexp-diagram-bounds', transform: `translate(${dx}, ${dy})` });
           g.value.appendChild(station.render().value);
           g.appendChild('rect', {
             class: 'bounds',
@@ -266,7 +271,7 @@ ${userStyle}
         //   path.arrow
         //   text.annotation?
         render(dx = 0, dy = 0) {
-          const g = createElement('g', { class: 'regexp-diagram-loop' + (isGreedy ? '' : ' non-greedy'), transform: `translate(${dx}, ${dy})` });
+          const g = createSvgElement('g', { class: 'regexp-diagram-loop' + (isGreedy ? '' : ' non-greedy'), transform: `translate(${dx}, ${dy})` });
           g.value.appendChild(station.render(style.railwayUnit, 0).value);
           g.appendChild('path', { class: 'railway', d: pathD(`
             M ${station.connectors[1].x + style.railwayUnit} ${station.connectors[1].y}
@@ -325,7 +330,7 @@ ${userStyle}
         //   path.arrow
         //   path.railway
         render(dx = 0, dy = 0) {
-          const g = createElement('g', { class: 'regexp-diagram-shortcut', transform: `translate(${dx}, ${dy})` });
+          const g = createSvgElement('g', { class: 'regexp-diagram-shortcut', transform: `translate(${dx}, ${dy})` });
 
           // MEMO: Optimization for `Shortcut(Loop(...))`
           const spaceLeft = station.isLoop ? station.connectors[0].x : 0;
@@ -397,7 +402,7 @@ ${userStyle}
         //   rect.border
         //   station
         render(dx = 0, dy = 0) {
-          const g = createElement('g', { class: 'regexp-diagram-border' + (userClass ? ` ${userClass}` : ''), transform: `translate(${dx}, ${dy})` });
+          const g = createSvgElement('g', { class: 'regexp-diagram-border' + (userClass ? ` ${userClass}` : ''), transform: `translate(${dx}, ${dy})` });
           if (annotation.length) {
             g.appendChild('text', {
               class: 'annotation',
@@ -413,6 +418,11 @@ ${userStyle}
             height: station.height + style.railwayUnit * 2,
           });
           g.value.appendChild(station.render(station.hasHorizontalPadding ? 0 : style.railwayUnit, style.railwayUnit + (annotation.length ? style.annotationHeight : 0)).value);
+          if (this.attributes) {
+            for (let name in this.attributes) {
+              g.value.setAttribute(name, this.attributes[name]);
+            }
+          }
           return g;
         }
       };
@@ -439,7 +449,7 @@ ${userStyle}
         // station
         // ...
         render(dx = 0, dy = 0) {
-          const g = createElement('g', { class: 'regexp-diagram-hstack', transform: `translate(${dx}, ${dy})` });
+          const g = createSvgElement('g', { class: 'regexp-diagram-hstack', transform: `translate(${dx}, ${dy})` });
           let childX = 0;
           for (let i = 0; i < this.stations.length; ++i) {
             const station = this.stations[i];
@@ -472,7 +482,7 @@ ${userStyle}
         // station
         // ...
         render(dx = 0, dy = 0) {
-          const g = createElement('g', { class: 'regexp-diagram-vstack', transform: `translate(${dx}, ${dy})` });
+          const g = createSvgElement('g', { class: 'regexp-diagram-vstack', transform: `translate(${dx}, ${dy})` });
           let childY = 0;
           for (let i = 0; i < this.stations.length; ++i) {
             const station = this.stations[i];
@@ -523,7 +533,7 @@ ${userStyle}
         //   ...
         //   child
         render(dx = 0, dy = 0) {
-          const g = createElement('g', { class: 'regexp-diagram-switch', transform: `translate(${dx}, ${dy})` });
+          const g = createSvgElement('g', { class: 'regexp-diagram-switch', transform: `translate(${dx}, ${dy})` });
           let childY = 0;
           let childrenY = [];
           for (let i = 0; i < stations.length; ++i) {
@@ -603,7 +613,7 @@ ${userStyle}
         render(dx = 0, dy = 0) {
           const connectorLevel = this.stations.map(s => s.connectors[0].y).reduce((a, b) => Math.max(a, b));
 
-          const g = createElement('g', { class: 'regexp-diagram-straightroute', transform: `translate(${dx}, ${dy})` });
+          const g = createSvgElement('g', { class: 'regexp-diagram-straightroute', transform: `translate(${dx}, ${dy})` });
           let childX = 0;
           for (let i = 0; i < this.stations.length; ++i) {
             const station = this.stations[i];
@@ -642,7 +652,7 @@ ${userStyle}
         //   ...
         //   child
         render(dx = 0, dy = 0) {
-          const g = createElement('g', { class: 'regexp-diagram-wrapping', transform: `translate(${dx}, ${dy})` });
+          const g = createSvgElement('g', { class: 'regexp-diagram-wrapping', transform: `translate(${dx}, ${dy})` });
           let childX = 0;
           let childY = 0;
           for (let i = 0; i < this.stations.length; ++i) {
@@ -672,8 +682,8 @@ ${userStyle}
   };
 }
 
-function createElement(name, attributes = {}) {
-  const element = document.createElement(name);
+function createSvgElement(name, attributes = {}) {
+  const element = document.createElementNS('http://www.w3.org/2000/svg', name);
   for (let key in attributes) {
     element.setAttribute(key, attributes[key]);
   }
@@ -682,7 +692,7 @@ function createElement(name, attributes = {}) {
       return element;
     },
     appendChild(name, attributes = {}) {
-      const child = createElement(name, attributes);
+      const child = createSvgElement(name, attributes);
       this.value.appendChild(child.value);
       return child;
     },

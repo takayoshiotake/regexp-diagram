@@ -76,3 +76,21 @@ footer * {
   margin: 0;
   color: var(--secondary-color);
 }
+
+svg *[data-text-range]:hover > rect {
+  animation-name: hovered-station;
+  animation-timing-function: linear;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+
+  outline: 3px solid rgba(0, 0, 255, 0.5);
+}
+
+@keyframes hovered-station {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -6;
+  }
+}
