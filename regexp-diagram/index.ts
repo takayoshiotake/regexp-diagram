@@ -11,6 +11,7 @@ export function makeDiagramSvg(style = defaultStyle) {
     // wrap: Infinity,
     // wrap: 0,
     wrap: 640,
+    padding: 12,
 
     ...style,
   };
@@ -48,14 +49,19 @@ rect.bounds {
   `);
   svg.value.setAttribute(
     'width',
-    wrapping.width + (mergedStyle.railwayWidth / 2) * 2
+    wrapping.width + mergedStyle.padding * 2,
   );
   svg.value.setAttribute(
     'height',
-    wrapping.height + (mergedStyle.railwayWidth / 2) * 2
+    wrapping.height + mergedStyle.padding * 2,
   );
-  let g = svg.appendChild('g', {
-    transform: `translate(${mergedStyle.railwayWidth / 2}, ${mergedStyle.railwayWidth / 2})`,
+  svg.appendChild('rect', {
+    width: svg.value.getAttribute('width'),
+    height: svg.value.getAttribute('height'),
+    fill: '#fff',
+  });
+  const g = svg.appendChild('g', {
+    transform: `translate(${mergedStyle.padding}, ${mergedStyle.padding})`,
   });
   g.value.appendChild(wrapping.render().value);
   return svg.value;

@@ -32,22 +32,6 @@ html {
     --textarea-background-color: #fafafa;
   }
 }
-body.dark {
-  --primary-color: #fff;
-  --secondary-color: rgba(255, 255, 255, 0.7);
-  --disabled-color: rgba(255, 255, 255, 0.5);
-  --background-color: #121212;
-  --divider-color: rgba(255, 255, 255, 0.12);
-  --textarea-background-color: #212121;
-}
-body.light {
-  --primary-color: rgba(0, 0, 0, 0.87);
-  --secondary-color: rgba(0, 0, 0, 0.6);
-  --disabled-color: rgba(0, 0, 0, 0.38);
-  --background-color: #fff;
-  --divider-color: rgba(0, 0, 0, 0.12);
-  --textarea-background-color: #fafafa;
-}
 
 ::placeholder {
   color: var(--disabled-color);
@@ -75,9 +59,10 @@ textarea:focus {
   outline: none;
 }
 
-#diagram {
-  padding: var(--spacing);
-  background-color: #fff;
+#actions, #options {
+  display: flex;
+  flex-direction: row;
+  gap: var(--spacing);
 }
 
 footer * {
