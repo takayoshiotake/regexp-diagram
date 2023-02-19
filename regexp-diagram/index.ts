@@ -5,7 +5,7 @@ export function makeDiagramSvg(regexp, style = defaultStyle) {
   // const parsed = parseRegExp(/([eE])?(a|b)?(a?)(a)?a*(a+)/);
   // const parsed = parseRegExp(/-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/);
   const parsed = parseRegExp(regexp);
-  console.debug(parsed);
+  // console.debug(parsed);
 
   const mergedStyle = {
     ...defaultStyle,

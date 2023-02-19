@@ -13,6 +13,10 @@ const views = {
   diagram: document.querySelector('#diagram'),
 };
 
+const state = {
+  isAutoRendering: false,
+};
+
 function init() {
   // const isMac = navigator.platform.toUpperCase().indexOf('MAC') !== -1;
   const isMac = undefined;
@@ -23,6 +27,17 @@ function init() {
     }
   });
 
+  views.regexpText.addEventListener('input', () => {
+    if (state.isAutoRendering) {
+      console.log('Skipped auto-rendering');
+      return;
+    }
+    state.isAutoRendering = true;
+    setTimeout(() => {
+      render();
+      state.isAutoRendering = false;
+    }, 300);
+  });
   views.renderButton.addEventListener('click', () => {
     render();
   });
@@ -43,11 +58,11 @@ function init() {
 
   const nowrap = localStorage.getItem('nowrap');
   if (nowrap !== null) {
-    views.nowrapOption.checked = nowrap;
+    views.nowrapOption.checked = nowrap === 'true';
   }
   const showBounds = localStorage.getItem('showBounds');
   if (showBounds !== null) {
-    views.showBoundsOption.checked = showBounds;
+    views.showBoundsOption.checked = showBounds === 'true';
   }
   const regexp = localStorage.getItem('regexp')
   if (regexp !== null) {
