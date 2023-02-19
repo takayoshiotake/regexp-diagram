@@ -457,7 +457,7 @@ function readToken(context, pattern, firstIndex): [Token, number] {
 
     // supportsNamedGroup
     {
-      let groupText = pattern.substr(0, i + 1);
+      let groupText = pattern.slice(0, i + 1);
       let re = /^\(\?<([^>]+)>/g;
       let result = re.exec(groupText);
       if (result) {
@@ -525,7 +525,7 @@ function readToken(context, pattern, firstIndex): [Token, number] {
       return [
         {
           type: TokenType.Group,
-          value: readTokens(context, pattern.substr(4, i - 4), firstIndex + 4),
+          value: readTokens(context, pattern.slice(4, i), firstIndex + 4),
           lookbehind: 'negative',
         },
         i + 1,
