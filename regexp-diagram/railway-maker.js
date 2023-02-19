@@ -16,6 +16,9 @@ export function RailwayMaker(style = defaultStyle) {
   const measureAnnotationText = text => measureText(text, `${style.annotationFontSize}px ${style.annotationFontFamily}`);
 
   return {
+    get style() {
+      return style;
+    },
     StyledSvgTag(userStyle = '') {
       const svgTag = createElement('svg', {
         'version': '1.1',

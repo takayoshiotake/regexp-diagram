@@ -13,6 +13,7 @@ export function makeDiagramSvg(regexp, style = defaultStyle) {
     // wrap: 0,
     wrap: 640,
     padding: 12,
+    showBounds: false,
 
     ...style,
   };
@@ -36,7 +37,10 @@ export function makeDiagramSvg(regexp, style = defaultStyle) {
     route.stations.push(stations[i]);
   }
   routes.push(route);
-  const wrapping = railwayMaker.Bounds(railwayMaker.Wrapping(routes));
+  let wrapping: any = railwayMaker.Wrapping(routes);
+  if (mergedStyle.showBounds) {
+    wrapping = railwayMaker.Bounds(wrapping);
+  }
 
   const svg = railwayMaker.StyledSvgTag(`
 .group > rect.border {
@@ -44,8 +48,7 @@ export function makeDiagramSvg(regexp, style = defaultStyle) {
   stroke: green;
 }
 rect.bounds {
-  /* stroke: magenta; */
-  stroke: none;
+  stroke: magenta;
 }
   `);
   svg.value.setAttribute(
@@ -153,8 +156,10 @@ function convertTokensToStations(railwayMaker, tokens) {
     }
   }
   // DEBUG
-  for (let i = 0; i < stations.length; ++i) {
-    stations[i] = railwayMaker.Bounds(stations[i]);
+  if (railwayMaker.style.showBounds) {
+    for (let i = 0; i < stations.length; ++i) {
+      stations[i] = railwayMaker.Bounds(stations[i]);
+    }
   }
   return stations;
 }

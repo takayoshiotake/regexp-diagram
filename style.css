@@ -48,6 +48,7 @@ body {
 #text-regexp {
   font-size: 1rem;
   height: 16ex;
+  min-height: 4ex;
   resize: vertical;
   box-sizing: border-box;
   color: var(--primary-color);
@@ -63,6 +64,10 @@ body {
   display: flex;
   flex-direction: row;
   gap: var(--spacing);
+}
+
+.text-error {
+  color: #B00020;
 }
 
 footer * {

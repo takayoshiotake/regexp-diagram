@@ -8,6 +8,8 @@ const views = {
   renderButton: document.querySelector('#button-render'),
   downloadSvgButton: document.querySelector('#button-download-svg'),
   downloadPngButton: document.querySelector('#button-download-png'),
+  nowrapOption: document.querySelector('#option-nowrap'),
+  showBoundsOption: document.querySelector('#option-show-bounds'),
   diagram: document.querySelector('#diagram'),
 };
 
@@ -30,7 +32,23 @@ function init() {
   views.downloadPngButton.addEventListener('click', () => {
     downloadPng();
   });
+  views.nowrapOption.addEventListener('change', () => {
+    localStorage.setItem('nowrap', views.nowrapOption.checked);
+    render();
+  });
+  views.showBoundsOption.addEventListener('change', () => {
+    localStorage.setItem('showBounds', views.showBoundsOption.checked);
+    render();
+  });
 
+  const nowrap = localStorage.getItem('nowrap');
+  if (nowrap !== null) {
+    views.nowrapOption.checked = nowrap;
+  }
+  const showBounds = localStorage.getItem('showBounds');
+  if (showBounds !== null) {
+    views.showBoundsOption.checked = showBounds;
+  }
   const regexp = localStorage.getItem('regexp')
   if (regexp !== null) {
     views.regexpText.value = regexp;
@@ -45,18 +63,35 @@ function render() {
   const regexp = views.regexpText.value;
   localStorage.setItem('regexp', regexp);
 
-  performance.mark('start');
-  const svg = makeDiagramSvg(regexp);
-  document.querySelector('#diagram').innerHTML = svg.outerHTML;
-  // xxx
-  document.querySelector('#diagram').style.height = svg.getAttribute('height') + 'px';
-  performance.mark('end');
-  performance.measure('time', 'start', 'end');
-  console.log(performance.getEntriesByName('time')[0].duration); 
+  const wrap = views.nowrapOption.checked ? Infinity : 640;
+  const showBounds = views.showBoundsOption.checked;
+  try {
+    performance.mark('start');
+    const svg = makeDiagramSvg(
+      regexp,
+      {
+        wrap,
+        showBounds,
+      },
+      false
+    );
+    views.diagram.innerHTML = svg.outerHTML;
+    // xxx
+    views.diagram.style.height = svg.getAttribute('height') + 'px';
+    performance.mark('end');
+    performance.measure('time', 'start', 'end');
+    console.log(performance.getEntriesByName('time')[0].duration);
+  } catch (e) {
+    console.warn(e);
+    views.diagram.innerHTML = `<p class="text-error">${e}</p>`;
+  }
 }
 
 function downloadSvg() {
-  const svgText = views.diagram.innerHTML;
+  const svgText = views.diagram.querySelector('svg');
+  if (!svgText) {
+    return;
+  }
   const a = document.createElement('a');
   a.download = 'regexp-diagram.svg';
   a.href = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgText)}`
@@ -64,7 +99,10 @@ function downloadSvg() {
 }
 
 function downloadPng() {
-  const svgText = views.diagram.innerHTML;
+  const svgText = views.diagram.querySelector('svg');
+  if (!svgText) {
+    return;
+  }
   const image = new Image();
   image.onload = () => {
       const canvas = document.createElement('canvas');
