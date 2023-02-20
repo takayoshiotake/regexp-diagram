@@ -1,0 +1,62 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="340" height="126"><defs><style type="text/css">* {
+  stroke-linecap: butt;
+}
+text {
+  fill: black;
+  font-size: 16px;
+  font-family: Arial;
+  white-space: nowrap;
+}
+text.classified {
+  font-style: oblique;
+}
+text.annotation {
+  font-size: 12px;
+  font-family: Arial;
+}
+tspan.quotation, text.hyphen {
+  fill: rgba(0, 0, 0, 0.6);
+}
+rect.station {
+  fill: white;
+  stroke: black;
+  stroke-width: 2px;
+}
+path.railway {
+  fill: none;
+  stroke: black;
+  stroke-width: 2px;
+}
+path.arrow {
+  fill: none;
+  stroke: black;
+  stroke-width: 2px;
+}
+path.loop {
+  fill: none;
+  stroke: black;
+  stroke-width: 2px;
+}
+.non-greedy path.loop {
+  stroke-dasharray: 4 2;
+}
+rect.border {
+  fill: #F0F0F0;
+  stroke: black;
+  stroke-width: 2px;
+  stroke-dasharray: 4 2;
+}
+
+rect.bounds {
+  fill: none;
+  stroke: magenta;
+  stroke-width: 1px;
+}
+
+.group &gt; rect.border {
+  fill: #F0FFF0;
+  stroke: green;
+}
+rect.bounds {
+  stroke: magenta;
+}</style></defs><rect width="340" height="126" fill="#fff"></rect><g transform="translate(12, 12)"><g class="regexp-diagram-wrapping" transform="translate(0, 0)"><g class="regexp-diagram-straightroute" transform="translate(0, 0)"><g class="regexp-diagram-terminalstation" transform="translate(0, 36)"><path class="railway" d="M0 0V24M4 0V24"></path></g><g class="regexp-diagram-loop" transform="translate(16, 0)"><g class="regexp-diagram-border group" transform="translate(12, 0)" data-text-range="0,8"><text class="annotation" x="0" y="16">group #1</text><rect class="border" x="0" y="24" width="96" height="48"></rect><g class="regexp-diagram-straightroute" transform="translate(12, 36)"><g class="regexp-diagram-characterstation" transform="translate(0, 0)" data-text-range="1,7"><rect class="station" x="0" y="0" width="72" height="24" rx="12"></rect><text x="6.2109375" y="17.5"><tspan class="quotation">“</tspan><tspan>greedy</tspan><tspan class="quotation">”</tspan></text></g></g></g><path class="railway" d="M 96 48H 108"></path><path class="loop" d="M 108 48q 12 0,12 12V 84q 0 12,-12 12H 12q -12 0,-12 -12V 60q 0 -12,12 -12H 24"></path><path class="arrow" d="M 24 90l -12 6l 12 6"></path></g><path class="railway" d="M 4 48H 28"></path><g class="regexp-diagram-loop non-greedy" transform="translate(148, 0)"><g class="regexp-diagram-border group" transform="translate(12, 0)" data-text-range="9,21"><text class="annotation" x="0" y="16">group #2</text><rect class="border" x="0" y="24" width="128" height="48"></rect><g class="regexp-diagram-straightroute" transform="translate(12, 36)"><g class="regexp-diagram-characterstation" transform="translate(0, 0)" data-text-range="10,20"><rect class="station" x="0" y="0" width="104" height="24" rx="12"></rect><text x="6.19921875" y="17.5"><tspan class="quotation">“</tspan><tspan>non-greedy</tspan><tspan class="quotation">”</tspan></text></g></g></g><path class="railway" d="M 128 48H 140"></path><path class="loop" d="M 140 48q 12 0,12 12V 84q 0 12,-12 12H 12q -12 0,-12 -12V 60q 0 -12,12 -12H 24"></path><path class="arrow" d="M 24 90l -12 6l 12 6"></path></g><path class="railway" d="M 124 48H 160"></path><g class="regexp-diagram-terminalstation" transform="translate(312, 36)"><path class="railway" d="M0 0V24M4 0V24"></path></g><path class="railway" d="M 288 48H 312"></path></g></g></g></svg>

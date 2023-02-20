@@ -1,7 +1,7 @@
 import './style.css';
 import { makeDiagramSvg } from './regexp-diagram';
 
-document.querySelector('#version').innerHTML = `regexp-diagram 2.0.0-a3`;
+document.querySelector('#version').innerHTML = `regexp-diagram ${__APP_VERSION__}`;
 
 const views = {
   regexpTxtTab: document.querySelector('#tab-regexp-txt'),
@@ -159,7 +159,7 @@ function downloadPng() {
   const image = new Image();
   image.onload = () => {
       const canvas = document.createElement('canvas');
-      const scale = 2;
+      const scale = 1;
       canvas.width = image.naturalWidth * scale;
       canvas.height = image.naturalHeight * scale;
       const ctx = canvas.getContext('2d');
