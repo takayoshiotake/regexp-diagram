@@ -30,8 +30,10 @@ x(?=y)|x(?!y)|(?<=y)x|(?<!y)x
 
 ## Issues
 
-None
+- Unicode property escapes not supported
 
 ## Special thanks
 
 - 🔗 <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions>
+- 🔗 <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions/Cheatsheet>
+- 🔗 <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/RegExp>
