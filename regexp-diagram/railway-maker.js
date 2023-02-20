@@ -636,7 +636,19 @@ ${userStyle}
       return {
         stations: stations,
         get width() {
-          return this.stations.map(s => s.width).reduce((a, b) => Math.max(a, b)) + (this.stations.length >= 2 ? style.railwayUnit * 2: 0);
+          const widthList = this.stations.map(s => s.width);
+          if (this.stations.length >= 2) {
+            // The first and last have the wrapping railway on one side (right or left),
+            // the rest have it on both sides.
+            for (let i = 0; i < this.stations.length; ++i) {
+              if (i == 0 || i == this.stations.length - 1) {
+                widthList[i] += style.railwayUnit * 2;
+              } else {
+                widthList[i] += style.railwayUnit * 4;
+              }
+            }
+          }
+          return widthList.reduce((a, b) => Math.max(a, b));
         },
         get height() {
           return this.stations.map(s => s.height).reduce((a, b) => a + b + style.railwayUnit * 4);

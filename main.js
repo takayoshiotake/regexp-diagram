@@ -1,10 +1,13 @@
 import './style.css';
 import { makeDiagramSvg } from './regexp-diagram';
 
-document.querySelector('#version').innerHTML = `regexp-diagram 2.0.0-a2`;
+document.querySelector('#version').innerHTML = `regexp-diagram 2.0.0-a3`;
 
 const views = {
+  regexpTxtTab: document.querySelector('#tab-regexp-txt'),
+  styleJsonTab: document.querySelector('#tab-style-json'),
   regexpText: document.querySelector('#text-regexp'),
+  styleText: document.querySelector('#text-style'),
   renderButton: document.querySelector('#button-render'),
   downloadSvgButton: document.querySelector('#button-download-svg'),
   downloadPngButton: document.querySelector('#button-download-png'),
@@ -14,6 +17,7 @@ const views = {
 };
 
 const state = {
+  currentTab: views.regexpTxtTab,
   isAutoRendering: false,
 };
 
@@ -27,6 +31,22 @@ function init() {
     }
   });
 
+  views.regexpTxtTab.addEventListener('click', () => {
+    state.currentFile = views.regexpTxtTab;
+    views.styleJsonTab.classList.remove('active');
+    views.regexpTxtTab.classList.add('active');
+    views.regexpText.style.display = 'block';
+    views.styleText.style.display = 'none';
+    views.regexpText.style.height = views.styleText.style.height;
+  });
+  views.styleJsonTab.addEventListener('click', () => {
+    state.currentFile = views.styleJsonTab;
+    views.regexpTxtTab.classList.remove('active');
+    views.styleJsonTab.classList.add('active');
+    views.regexpText.style.display = 'none';
+    views.styleText.style.display = 'block';
+    views.styleText.style.height = views.regexpText.style.height;
+  });
   views.regexpText.addEventListener('input', () => {
     if (state.isAutoRendering) {
       console.log('Skipped auto-rendering');
@@ -71,6 +91,9 @@ function init() {
   if (views.regexpText.value === '') {
     views.regexpText.value = String.raw`-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?`;
   }
+  views.styleText.value = JSON.stringify({
+    characterFontFamily: "Arial",
+  }, null, 2);
   render();
 }
 
@@ -81,12 +104,14 @@ function render() {
   const wrap = views.nowrapOption.checked ? Infinity : 640;
   const showBounds = views.showBoundsOption.checked;
   try {
+    performance.clearMeasures('time');
     performance.mark('start');
     const svg = makeDiagramSvg(
       regexp,
       {
         wrap,
         showBounds,
+        ...JSON.parse(views.styleText.value),
       },
       false
     );

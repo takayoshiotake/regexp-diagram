@@ -21,6 +21,7 @@ html {
     --background-color: #121212;
     --divider-color: rgba(255, 255, 255, 0.12);
     --textarea-background-color: #212121;
+    --textarea-disabled-background-color: #424242;
   }
 }
 @media not all and (prefers-color-scheme: dark) {
@@ -32,6 +33,12 @@ html {
     --background-color: #fff;
     --divider-color: rgba(0, 0, 0, 0.12);
     --textarea-background-color: #fafafa;
+    --textarea-disabled-background-color: #eeeeee;
+  }
+
+  #diagram > svg {
+    outline: 1px solid rgba(0, 0, 0, 0.12);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
   }
 }
 
@@ -47,7 +54,29 @@ body {
   background-color: var(--background-color);
 }
 
-#text-regexp {
+#tab {
+  margin-bottom: -12px;
+  display: flex;
+  flex-direction: row;
+}
+
+.tab {
+  user-select: none;
+  padding: 0 var(--spacing);
+  color: var(--disabled-color);
+  background-color: var(--textarea-disabled-background-color);
+
+  border: 1px solid transparent;
+  border-bottom: none;
+}
+
+.tab.active {
+  color: var(--primary-color);
+  background-color: var(--textarea-background-color);
+  border-color: var(--divider-color);
+}
+
+textarea {
   font-size: 1rem;
   height: 16ex;
   min-height: 4ex;
@@ -58,7 +87,7 @@ body {
   border: 1px solid var(--divider-color);
 }
 
-#text-regexp:focus {
+textarea:focus {
   outline: none;
 }
 
@@ -77,13 +106,18 @@ footer * {
   color: var(--secondary-color);
 }
 
-svg *[data-text-range]:hover > rect {
+/* MEMO: To make only children `:hover` without parent `:hover` */
+svg *[data-text-range]:hover:not(:has(*[data-text-range]:hover)) > rect {
   animation-name: hovered-station;
   animation-timing-function: linear;
   animation-duration: 1s;
   animation-iteration-count: infinite;
 
-  outline: 3px solid rgba(0, 0, 255, 0.5);
+  outline: 3px solid rgba(0, 128, 255, 0.75);
+}
+
+svg *[data-text-range]:hover:has(*[data-text-range]:hover) > rect {
+  outline: 3px solid rgba(0, 0, 255, 0.25);
 }
 
 @keyframes hovered-station {
