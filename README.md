@@ -30,7 +30,7 @@ x(?=y)|x(?!y)|(?<=y)x|(?<!y)x
 
 ## Issues
 
-- `.{2}{2}` should be error: Nothing to repeat (2022-11-23, v1.1.2-beta)
+None
 
 ## Special thanks
 

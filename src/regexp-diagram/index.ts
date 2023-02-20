@@ -373,7 +373,7 @@ function parseRegExp(regexp) {
 
     pattern = regexp.source;
   } else {
-    throw `Error: Not supported parameter type for regexp: type=${typeof regexp}`;
+    throw `Error: not supported parameter type for regexp: type=${typeof regexp}`;
   }
 
   return readTokens(context, pattern);
@@ -391,12 +391,12 @@ function readTokens(context, pattern, firstIndex = 0) {
 
     if (token.type === TokenType.Repeat) {
       if (tokens.length === 0) {
-        throw 'Syntax error: Nothing to repeat';
+        throw 'Syntax error: nothing to repeat';
       }
 
       const lastToken = tokens.slice(-1)[0];
       if (!isRepeatable(lastToken)) {
-        throw 'Syntax error: Nothing to repeat';
+        throw 'Syntax error: nothing to repeat';
       }
       if (token.value === '?') {
         if (lastToken.repeat) {
@@ -406,9 +406,15 @@ function readTokens(context, pattern, firstIndex = 0) {
             lastToken.repeat.nonGreedy = true;
           }
         } else {
+        if (lastToken.repeat) {
+          throw 'Syntax error: duplicated repetitions';
+        }
           lastToken.repeat = { min: 0, max: 1 };
         }
       } else {
+        if (lastToken.repeat) {
+          throw 'Syntax error: duplicated repetitions';
+        }
         lastToken.repeat = token.value;
       }
     } else {
