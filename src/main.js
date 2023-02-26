@@ -93,6 +93,7 @@ function init() {
   }
   views.styleText.value = JSON.stringify({
     characterFontFamily: "Arial",
+    annotationFontFamily: "Arial",
   }, null, 2);
   render();
 }

@@ -1,11 +1,7 @@
 import { RailroadMaker, defaultStyle } from './railroad-maker.js';
 
 export function makeDiagramSvg(regexp, style = defaultStyle) {
-  // const parsed = parseRegExp(/(?=a)(?!a)(?<=a)(?<!a)/);
-  // const parsed = parseRegExp(/([eE])?(a|b)?(a?)(a)?a*(a+)/);
-  // const parsed = parseRegExp(/-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/);
   const parsed = parseRegExp(regexp);
-  // console.debug(parsed);
 
   const mergedStyle = {
     ...defaultStyle,
@@ -19,7 +15,6 @@ export function makeDiagramSvg(regexp, style = defaultStyle) {
   };
   const railroadMaker = RailroadMaker(mergedStyle);
 
-  // let stations = testStations(railroadMaker);
   let stations = convertTokensToStations(railroadMaker, parsed);
   stations = [
     railroadMaker.TerminalStation(),
@@ -164,190 +159,6 @@ function convertTokensToStations(railroadMaker, tokens) {
       stations[i] = railroadMaker.Bounds(stations[i]);
     }
   }
-  return stations;
-}
-
-function testStations(railroadMaker) {
-  const stations: any[] = [];
-  stations.push(railroadMaker.TerminalStation());
-  stations.push(
-    railroadMaker.CharacterStation(
-      'Hello world!',
-      false
-    )
-  );
-  stations.push(
-    railroadMaker.Loop(
-      railroadMaker.CharacterStation(
-        'any character',
-        true
-      ),
-      'loop',
-      false
-    )
-  );
-  stations.push(
-    railroadMaker.Shortcut(
-      railroadMaker.CharacterStation(
-        'a',
-        true
-      )
-    )
-  );
-  stations.push(
-    railroadMaker.Shortcut(
-      railroadMaker.Loop(
-        railroadMaker.CharacterStation(
-          'a',
-          true
-        )
-      )
-    )
-  );
-  stations.push(
-    railroadMaker.Loop(
-      railroadMaker.Loop(
-        railroadMaker.CharacterStation(
-          'a',
-          true
-        ),
-        'inner loop text ...'
-      ),
-      'outer loop text ...'
-    )
-  );
-  stations.push(
-    railroadMaker.Shortcut(
-      railroadMaker.Shortcut(
-        railroadMaker.CharacterStation(
-          'a',
-          true
-        )
-      )
-    )
-  );
-  stations.push(
-    railroadMaker.Loop(
-      railroadMaker.Shortcut(
-        railroadMaker.CharacterStation(
-          'a',
-          true
-        )
-      ),
-      ''
-    )
-  );
-  stations.push(
-    railroadMaker.Border(
-      railroadMaker.CharacterStation(
-        'a',
-        true
-      ),
-      'group'
-    )
-  );
-  stations.push(
-    railroadMaker.Border(
-      railroadMaker.CharacterStation(
-        'a',
-        true
-      ),
-      'long long text ...'
-    )
-  );
-  stations.push(
-    railroadMaker.Border(
-      railroadMaker.Shortcut(
-        railroadMaker.CharacterStation(
-          'a',
-          true
-        )
-      )
-    )
-  );
-  stations.push(
-    railroadMaker.Border(
-      railroadMaker.Loop(
-        railroadMaker.CharacterStation(
-          'a',
-          true
-        )
-      )
-    )
-  );
-  stations.push(
-    railroadMaker.Border(
-      railroadMaker.Border(
-        railroadMaker.CharacterStation(
-          'a',
-          true
-      ),
-        'inner border text ...'
-      ),
-      'outer border text ...'
-    )
-  );
-  stations.push(railroadMaker.SelectionStation(
-    [
-      railroadMaker.CharacterStation('1'),
-      railroadMaker.CharacterStation('a', true),
-      railroadMaker.RangeStation(railroadMaker.CharacterStation('0'), railroadMaker.CharacterStation('9'), false),
-    ]
-  ));
-  stations.push(
-    railroadMaker.Shortcut(
-      railroadMaker.SelectionStation(
-        [
-          railroadMaker.CharacterStation('1'),
-          railroadMaker.CharacterStation('a', true),
-          railroadMaker.RangeStation(railroadMaker.CharacterStation('0'), railroadMaker.CharacterStation('9'), false),
-        ]
-      )
-    )
-  );
-  stations.push(
-    railroadMaker.Shortcut(
-      railroadMaker.Loop(
-        railroadMaker.SelectionStation(
-          [
-            railroadMaker.CharacterStation('1'),
-            railroadMaker.CharacterStation('a', true),
-            railroadMaker.RangeStation(railroadMaker.CharacterStation('0'), railroadMaker.CharacterStation('9'), false),
-          ]
-        )
-      )
-    )
-  );
-  stations.push(
-    railroadMaker.Switch(
-      [
-        railroadMaker.CharacterStation('1'),
-        railroadMaker.Loop(railroadMaker.CharacterStation('a', true), 'once'),
-        railroadMaker.Shortcut(railroadMaker.CharacterStation('a', true)),
-      railroadMaker.Shortcut(
-        railroadMaker.Loop(
-            railroadMaker.SelectionStation(
-              [
-                railroadMaker.CharacterStation('1'),
-                railroadMaker.CharacterStation('a', true),
-                railroadMaker.RangeStation(railroadMaker.CharacterStation('0'), railroadMaker.CharacterStation('9'), false),
-              ]
-        )
-          )
-        )
-      ]
-    )
-  );
-  stations.push(railroadMaker.RangeStation(railroadMaker.CharacterStation('1'), railroadMaker.CharacterStation('a', true)));
-  stations.push(railroadMaker.StraightRoute(
-    [
-      railroadMaker.CharacterStation('1'),
-      railroadMaker.Loop(railroadMaker.CharacterStation('a', true)),
-      railroadMaker.Border(railroadMaker.CharacterStation('a', true)),
-      railroadMaker.Shortcut(railroadMaker.CharacterStation('a', true)),
-    ]
-  ));
-  stations.push(railroadMaker.TerminalStation());
   return stations;
 }
 
