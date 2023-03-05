@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>regexp-diagram</title>
+    <link rel="icon" href="/regexp-diagram/assets/favicon-a0a636e5.svg" type="image/svg+xml">
+    
+    <script type="module" crossorigin src="/regexp-diagram/assets/index-84b99ed1.js"></script>
+    <link rel="stylesheet" href="/regexp-diagram/assets/index-9740c933.css">
+  </head>
+  <body>
+    <div id="tab">
+      <div class="tab active" id="tab-regexp-txt">regexp.txt</div>
+      <div class="tab" id="tab-style-json">style.json (experimental)</div>
+    </div>
+    <textarea id="text-regexp" placeholder="Input RegExp here..."></textarea>
+    <textarea id="text-style" style="display: none;" placeholder="Input style here..."></textarea>
+    <div id="actions">
+      <input id="button-render" type="button" value="Render">
+      <input id="button-download-svg" type="button" value="Download SVG">
+      <input id="button-download-png" type="button" value="Download PNG">
+      <input id="button-copy-png" type="button" value="Copy PNG to clipboard">
+    </div>
+    <div id="options">
+      <label><input id="option-nowrap" type="checkbox">Nowrap</label>
+      <label><input id="option-show-bounds" type="checkbox">Show bounds (DEBUG)</label>
+    </div>
+    <div id="diagram"></div>
+    <footer>
+      <p id="version"></p>
+      <p><a href="https://github.com/takayoshiotake/regexp-diagram">https://github.com/takayoshiotake/regexp-diagram</a></p>
+      <br>
+      <p>Older release: <a href="./v1/index.html">v1</a></p>
+    </footer>
+    
+  </body>
+</html>
