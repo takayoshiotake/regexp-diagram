@@ -11,6 +11,7 @@ const views = {
   renderButton: document.querySelector('#button-render'),
   downloadSvgButton: document.querySelector('#button-download-svg'),
   downloadPngButton: document.querySelector('#button-download-png'),
+  copyPngButton: document.querySelector('#button-copy-png'),
   nowrapOption: document.querySelector('#option-nowrap'),
   showBoundsOption: document.querySelector('#option-show-bounds'),
   diagram: document.querySelector('#diagram'),
@@ -66,6 +67,9 @@ function init() {
   });
   views.downloadPngButton.addEventListener('click', () => {
     downloadPng();
+  });
+  views.copyPngButton.addEventListener('click', () => {
+    copyPng();
   });
   views.nowrapOption.addEventListener('change', () => {
     localStorage.setItem('nowrap', views.nowrapOption.checked);
@@ -152,13 +156,35 @@ function downloadSvg() {
   a.click()
 }
 
-function downloadPng() {
+async function downloadPng() {
   const svgText = views.diagram.querySelector('svg').outerHTML;
   if (!svgText) {
     return;
   }
+  const canvas = await renderedCanvas(svgText);
+  const a = document.createElement('a');
+  a.download = `regexp-diagram.png`;
+  a.href = canvas.toDataURL();
+  a.click();
+}
+
+async function copyPng() {
+  const svgText = views.diagram.querySelector('svg').outerHTML;
+  if (!svgText) {
+    return;
+  }
+  const canvas = await renderedCanvas(svgText);
+  canvas.toBlob(blob => {
+    navigator.clipboard.write([
+      new ClipboardItem({[blob.type]: blob}),
+    ]);
+  });
+}
+
+async function renderedCanvas(svgText) {
   const image = new Image();
-  image.onload = () => {
+  const promise = new Promise(resolve => {
+    image.onload = () => {
       const canvas = document.createElement('canvas');
       const scale = 1;
       canvas.width = image.naturalWidth * scale;
@@ -167,12 +193,11 @@ function downloadPng() {
       ctx.setTransform(scale, 0, 0, scale, 0, 0);
       ctx.drawImage(image, 0, 0);
 
-      const a = document.createElement('a');
-      a.download = `regexp-diagram.png`;
-      a.href = canvas.toDataURL();
-      a.click();
-  }
+      resolve(canvas);
+    }
+  });
   image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgText)}`;
+  return promise;
 }
 
 init();
