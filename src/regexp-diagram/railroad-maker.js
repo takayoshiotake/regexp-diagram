@@ -600,7 +600,7 @@ ${userStyle}
           const lastChildX = this.stations.slice(0, -1).map(s => s.width).reduce((a, b) => a + b + style.railroadUnit, 0);
           return [
             { x: this.stations[0].connectors[0].x, y: connectorLevel },
-            { x: lastChildX + this.stations.slice(-1)[0].connectors[1].x, y: connectorLevel },
+            { x: lastChildX + this.stations.at(-1).connectors[1].x, y: connectorLevel },
           ];
         },
         // g

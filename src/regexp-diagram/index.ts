@@ -205,7 +205,7 @@ function readTokens(context, pattern, firstIndex = 0) {
         throw 'Syntax error: nothing to repeat';
       }
 
-      const lastToken = tokens.slice(-1)[0];
+      const lastToken = tokens.at(-1);
       if (!isRepeatable(lastToken)) {
         throw 'Syntax error: nothing to repeat';
       }
@@ -648,7 +648,7 @@ function concatenateCharacterTokens(tokens: Token[]): Token[] {
     if (concatenated.length === 0) {
       concatenated.push({ ...token });
     } else {
-      const lastToken = concatenated.slice(-1)[0];
+      const lastToken = concatenated.at(-1);
       if (lastToken.type === TokenType.Character && !lastToken.repeat && token.type === TokenType.Character && !token.repeat) {
         lastToken.value += token.value;
         if (lastToken._textRange && token._textRange) {
